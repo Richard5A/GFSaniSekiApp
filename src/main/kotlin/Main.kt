@@ -6,7 +6,6 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import data.datasources.credentials.CredentialsDataSource
 import it.sauronsoftware.junique.JUnique
-import it.sauronsoftware.junique.MessageHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.compose.resources.painterResource
 import ui.einsatzmelder.EinsatzmelderScreen
@@ -16,7 +15,6 @@ import ui.login.LoginViewModel
 import ui.resources.Res
 import ui.resources.logo
 import ui.theme.EinsatzmelderTheme
-import ui.windows.TRAY_ICON_TOOLTIP
 import ui.windows.getTrayIcon
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
@@ -48,6 +46,7 @@ fun main() {
     // Action Listener only reacts on double click
     trayIcon.addMouseListener(object : MouseListener {
         override fun mouseClicked(e: MouseEvent?) {
+            if(trayIcon.popupMenu.isEnabled)
             windowOpenFlow.value = true
         }
 

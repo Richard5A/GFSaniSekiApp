@@ -47,3 +47,4 @@ bin/
 ## APP FILES
 /credentials.json
 /debug.txt
+/places.json

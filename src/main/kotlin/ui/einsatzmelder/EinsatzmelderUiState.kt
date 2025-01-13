@@ -1,9 +1,12 @@
 package ui.einsatzmelder
 
+import data.datasources.places.Place
+
 data class EinsatzmelderUiState(
     val description: String,
     val note: String,
-    val place: String,
+    val placeInput: String,
+    val place: Place?,
     val keyword: String,
     val type: String,
     val loading: Boolean,

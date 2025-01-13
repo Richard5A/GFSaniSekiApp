@@ -5,7 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -52,85 +53,60 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
 
             if(uiState.isDebug){
                 item {
-                    TextField(
+                    EinsatzmelderTextField(
                         value = uiState.keyword,
                         onValueChange = { viewModel.setKeyword(it) },
                         label = { Text("Keyword *") },
-                        modifier = Modifier.sizeIn(
-                            minHeight = 64.dp,
-                            minWidth = 256.dp,
-                            maxWidth = 400.dp,
-                            maxHeight = 256.dp
-                        ).fillMaxWidth(),
                         singleLine = true,
                     )
                 }
             }
 
             item {
-                TextField(
+                EinsatzmelderTextField(
                     value = uiState.type,
                     onValueChange = { viewModel.setType(it) },
                     label = { Text("Typ *") },
-                    modifier = Modifier.sizeIn(
-                        minHeight = 64.dp,
-                        minWidth = 256.dp,
-                        maxWidth = 400.dp,
-                        maxHeight = 256.dp
-                    ).fillMaxWidth(),
                     singleLine = true,
                 )
             }
 
             item {
-                TextField(
-                    value = uiState.place,
+                EinsatzmelderTextField(
+                    value = uiState.placeInput,
                     onValueChange = { viewModel.setPlace(it) },
                     label = { Text("Ort *") },
-                    modifier = Modifier.sizeIn(
-                        minHeight = 64.dp,
-                        minWidth = 256.dp,
-                        maxWidth = 400.dp,
-                        maxHeight = 256.dp
-                    ).fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    trailingIcon = {
+                        if(uiState.place != null) {
+                            Icon(Icons.Default.Check, contentDescription = null)
+                        }
+                    }
                 )
             }
 
             item {
-                TextField(
+                EinsatzmelderTextField(
                     value = uiState.description,
                     onValueChange = { viewModel.setDescription(it) },
                     label = { Text("Beschreibung (optional)") },
-                    modifier = Modifier.sizeIn(
-                        minHeight = 100.dp,
-                        minWidth = 256.dp,
-                        maxWidth = 400.dp,
-                        maxHeight = 256.dp
-                    ).fillMaxWidth()
                 )
             }
 
             item {
-                TextField(
+                EinsatzmelderTextField(
                     value = uiState.note,
                     onValueChange = { viewModel.setNotes(it) },
                     label = { Text("Notizen (optional)") },
-                    modifier = Modifier.sizeIn(
-                        minHeight = 100.dp,
-                        minWidth = 256.dp,
-                        maxWidth = 400.dp,
-                        maxHeight = 256.dp
-                    ).fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions()
                 )
+
             }
 
             item {
                 Button(
                     onClick = { viewModel.triggerAlarm() },
                     modifier = Modifier.padding(bottom = 16.dp, top = 8.dp),
-                    enabled = (!uiState.isDebug || uiState.keyword.isNotBlank()) && uiState.place.isNotBlank() && uiState.type.isNotBlank(),
+                    enabled = (!uiState.isDebug || uiState.keyword.isNotBlank()) && uiState.placeInput.isNotBlank() && uiState.type.isNotBlank(),
                 ) {
                     Text("Einsatz auslösen")
                 }
@@ -151,4 +127,28 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
         }
 
     }
+}
+
+@Composable
+fun EinsatzmelderTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    trailingIcon: @Composable() (() -> Unit)? = null,
+    singleLine: Boolean = false,
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = label,
+        modifier = modifier.sizeIn(
+            minHeight = if(singleLine) 64.dp else 100.dp,
+            minWidth = 256.dp,
+            maxWidth = 400.dp,
+            maxHeight = 256.dp
+        ).fillMaxWidth(),
+        trailingIcon = trailingIcon,
+        singleLine = singleLine
+    )
 }

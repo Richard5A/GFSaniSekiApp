@@ -3,8 +3,9 @@ package ui.einsatzmelder
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.TriggerAlarmData
-import data.TriggerAlarmRepository
+import data.repositories.TriggerAlarmRepository
 import data.datasources.debug.IsDebugDataSource
+import data.repositories.PlaceRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +16,7 @@ import java.awt.TrayIcon
 
 class EinsatzmelderViewModel : ViewModel() {
     private val alarmRepository = TriggerAlarmRepository()
+    private val placeRepository = PlaceRepository()
 
     private var _uiState: MutableStateFlow<EinsatzmelderUiState>
     private val isDebug: Boolean = IsDebugDataSource().isDebug()
@@ -24,7 +26,8 @@ class EinsatzmelderViewModel : ViewModel() {
         _uiState = MutableStateFlow(EinsatzmelderUiState(
             description = "",
             note = "",
-            place = "",
+            placeInput = "",
+            place = null,
             keyword = "",
             type = "",
             loading = false,
@@ -45,7 +48,9 @@ class EinsatzmelderViewModel : ViewModel() {
     }
 
     fun setPlace(place: String) {
-        _uiState.value = _uiState.value.copy(place = place)
+        val placeForString = placeRepository.findPlace(place)
+//        println("Place $placeForString found for $place")
+        _uiState.value = _uiState.value.copy(placeInput = place, place = placeForString)
     }
 
     fun setKeyword(keyword: String) {
@@ -62,14 +67,18 @@ class EinsatzmelderViewModel : ViewModel() {
         println("triggerAlarm called")
 
         viewModelScope.launch(Dispatchers.IO) {
+            val lat = uiStateNow.place?.lat
+            val lng = uiStateNow.place?.lng
             println("Dispatcher IO running")
             val result = alarmRepository.triggerAlarm(
                 TriggerAlarmData(
                     keyword = if(isDebug) uiStateNow.keyword else "RD",
                     message = uiStateNow.description,
                     note = uiStateNow.note,
-                    `object` = uiStateNow.place,
+                    `object` = uiStateNow.placeInput,
                     type = uiStateNow.type,
+                    lat = lat,
+                    lng = lng,
                 )
             )
             println("Call resulted with status code: ${result.code()}")
@@ -82,7 +91,9 @@ class EinsatzmelderViewModel : ViewModel() {
                         keyword = "TEST",
                         message = "TYP: ${uiStateNow.type}\nMESSAGE:${uiStateNow.description}",
                         note = uiStateNow.note,
-                        `object` = uiStateNow.place,
+                        `object` = uiStateNow.placeInput,
+                        lat = lat,
+                        lng = lng,
                     )
                 )
                 println("Backup-call resulted with status code: ${backupResult.code()}")
@@ -102,7 +113,8 @@ class EinsatzmelderViewModel : ViewModel() {
                         loading = false,
                         requestResultError = false,
                         note = "",
-                        place = "",
+                        placeInput = "",
+                        place = null,
                         keyword = "",
                         type = "",
                         description = ""
@@ -114,7 +126,8 @@ class EinsatzmelderViewModel : ViewModel() {
                     loading = false,
                     requestResultError = false,
                     note = "",
-                    place = "",
+                    placeInput = "",
+                    place = null,
                     keyword = "",
                     type = "",
                     description = ""

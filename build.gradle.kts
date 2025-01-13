@@ -31,6 +31,7 @@ dependencies {
     implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
     implementation(compose.components.resources)
+    implementation(compose.materialIconsExtended)
 }
 
 compose.resources {

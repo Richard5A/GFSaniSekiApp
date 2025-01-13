@@ -15,4 +15,6 @@ data class TriggerAlarmData(
     val location: String? = null,
     val district: String? = null,
     val alarmMessage: String? = null,
+    val lat: Double? = null,
+    val lng: Double? = null,
 )

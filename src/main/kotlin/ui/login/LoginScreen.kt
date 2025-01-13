@@ -52,6 +52,9 @@ fun LoginScreen(viewModel: LoginViewModel) {
 
         Button(
             onClick = { viewModel.save() },
+            enabled = uiState.webApiKey.isNotBlank() &&
+                    uiState.webApiToken.isNotBlank() &&
+                    uiState.accessToken.isNotBlank(),
         ) {
             Text("Login")
         }

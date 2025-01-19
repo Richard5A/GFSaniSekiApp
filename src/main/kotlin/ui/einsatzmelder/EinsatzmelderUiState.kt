@@ -4,7 +4,7 @@ import data.datasources.places.Place
 
 data class EinsatzmelderUiState(
     val description: String,
-    val note: String,
+    val details: String,
     val placeInput: String,
     val place: Place?,
     val keyword: String,

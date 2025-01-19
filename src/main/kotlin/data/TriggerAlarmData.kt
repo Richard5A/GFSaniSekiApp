@@ -8,7 +8,7 @@ data class TriggerAlarmData(
     val keyword: String? = null,
     val type: String? = null,
     val message: String? = null,
-    val note: String? = null,
+    val details: String? = null,
     val operationResources: String? = null,
     val operationSchedule: String? = null,
     val `object`: String? = null,

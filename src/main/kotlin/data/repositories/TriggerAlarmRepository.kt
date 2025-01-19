@@ -37,7 +37,7 @@ class TriggerAlarmRepository {
         val body = TriggerAlarmData(
             operationSchedule = null,
             operationResources = null,
-            note = null,
+            details = null,
             type = null,
             alarmDate = null,
             alarmMessage = null,

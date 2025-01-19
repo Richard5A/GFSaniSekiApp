@@ -95,9 +95,9 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
 
             item {
                 EinsatzmelderTextField(
-                    value = uiState.note,
-                    onValueChange = { viewModel.setNotes(it) },
-                    label = { Text("Notizen (optional)") },
+                    value = uiState.details,
+                    onValueChange = { viewModel.setDetails(it) },
+                    label = { Text("Details (optional)") },
                 )
 
             }

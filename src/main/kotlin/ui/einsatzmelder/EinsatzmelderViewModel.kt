@@ -25,7 +25,7 @@ class EinsatzmelderViewModel : ViewModel() {
         // run that after init of isDebug
         _uiState = MutableStateFlow(EinsatzmelderUiState(
             description = "",
-            note = "",
+            details = "",
             placeInput = "",
             place = null,
             keyword = "",
@@ -43,8 +43,8 @@ class EinsatzmelderViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(description = description)
     }
 
-    fun setNotes(note: String) {
-        _uiState.value = _uiState.value.copy(note = note)
+    fun setDetails(details: String) {
+        _uiState.value = _uiState.value.copy(details = details)
     }
 
     fun setPlace(place: String) {
@@ -74,7 +74,7 @@ class EinsatzmelderViewModel : ViewModel() {
                 TriggerAlarmData(
                     keyword = if(isDebug) uiStateNow.keyword else "RD",
                     message = uiStateNow.description,
-                    note = uiStateNow.note,
+                    details = uiStateNow.details,
                     `object` = uiStateNow.placeInput,
                     type = uiStateNow.type,
                     lat = lat,
@@ -90,7 +90,7 @@ class EinsatzmelderViewModel : ViewModel() {
                     TriggerAlarmData(
                         keyword = "TEST",
                         message = "TYP: ${uiStateNow.type}\nMESSAGE:${uiStateNow.description}",
-                        note = uiStateNow.note,
+                        details = uiStateNow.details,
                         `object` = uiStateNow.placeInput,
                         lat = lat,
                         lng = lng,
@@ -112,7 +112,7 @@ class EinsatzmelderViewModel : ViewModel() {
                     _uiState.value = _uiState.value.copy(
                         loading = false,
                         requestResultError = false,
-                        note = "",
+                        details = "",
                         placeInput = "",
                         place = null,
                         keyword = "",
@@ -125,7 +125,7 @@ class EinsatzmelderViewModel : ViewModel() {
                 _uiState.value = _uiState.value.copy(
                     loading = false,
                     requestResultError = false,
-                    note = "",
+                    details = "",
                     placeInput = "",
                     place = null,
                     keyword = "",

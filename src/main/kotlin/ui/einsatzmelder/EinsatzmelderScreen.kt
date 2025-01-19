@@ -25,7 +25,7 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
 
     Box(Modifier.fillMaxSize()) {
         LazyColumn (
-            modifier = Modifier.align(Alignment.Center).padding(horizontal = 16.dp),
+            modifier = Modifier.align(Alignment.Center).padding(horizontal = 16.dp).fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {

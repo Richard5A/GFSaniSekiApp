@@ -32,7 +32,8 @@ class EinsatzmelderViewModel : ViewModel() {
             type = "",
             loading = false,
             requestResultError = false,
-            isDebug = isDebug
+            isDebug = isDebug,
+            notifyLeader = false,
         ))
     }
 
@@ -59,6 +60,10 @@ class EinsatzmelderViewModel : ViewModel() {
 
     fun setType(type: String) {
         _uiState.value = _uiState.value.copy(type = type)
+    }
+
+    fun setNotifyLeader(newValue: Boolean) {
+        _uiState.value = _uiState.value.copy(notifyLeader = newValue)
     }
 
     fun triggerAlarm() {

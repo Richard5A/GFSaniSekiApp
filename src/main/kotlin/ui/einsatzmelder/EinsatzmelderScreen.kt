@@ -101,6 +101,12 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
                 )
 
             }
+            item {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Switch(checked = uiState.notifyLeader, onCheckedChange = viewModel::setNotifyLeader)
+                    Text("Leader alarmieren", modifier = Modifier.padding(start = 8.dp))
+                }
+            }
 
             item {
                 Button(

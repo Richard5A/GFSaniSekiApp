@@ -48,3 +48,4 @@ bin/
 /credentials.json
 /debug.txt
 /places.json
+/config.json

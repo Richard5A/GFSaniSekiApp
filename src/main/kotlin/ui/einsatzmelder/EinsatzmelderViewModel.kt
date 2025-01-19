@@ -3,6 +3,7 @@ package ui.einsatzmelder
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.TriggerAlarmData
+import data.datasources.config.ConfigDataSource
 import data.repositories.TriggerAlarmRepository
 import data.datasources.debug.IsDebugDataSource
 import data.repositories.PlaceRepository
@@ -34,6 +35,7 @@ class EinsatzmelderViewModel : ViewModel() {
             requestResultError = false,
             isDebug = isDebug,
             notifyLeader = false,
+            leaderName = ConfigDataSource.getConfig()?.leaderName
         ))
     }
 

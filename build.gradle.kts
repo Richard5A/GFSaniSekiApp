@@ -14,6 +14,7 @@ repositories {
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     maven("https://raw.githubusercontent.com/terjedahl/junique/master/maven2")
+    maven("https://jogamp.org/deployment/maven")
     google()
 }
 
@@ -24,14 +25,17 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
-    implementation ("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     implementation(compose.material3)
     implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.10.1")
     implementation(compose.components.resources)
     implementation(compose.materialIconsExtended)
+    api("io.github.kevinnzou:compose-webview-multiplatform:1.9.40")
+
+
 }
 
 compose.resources {
@@ -46,6 +50,18 @@ compose.resources {
 compose.desktop {
     application {
         mainClass = "MainKt"
+
+        jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
+        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED") // recommended but not necessary
+
+        if (System.getProperty("os.name").contains("Mac")) {
+            jvmArgs("--add-opens", "java.desktop/sun.lwawt=ALL-UNNAMED")
+            jvmArgs("--add-opens", "java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
+        }
+
+        buildTypes.release.proguard {
+            configurationFiles.from("compose-desktop.pro")
+        }
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)

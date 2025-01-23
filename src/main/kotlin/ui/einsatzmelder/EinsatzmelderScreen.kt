@@ -6,7 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -74,17 +74,29 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
             }
 
             item {
-                EinsatzmelderTextField(
-                    value = uiState.placeInput,
-                    onValueChange = { viewModel.setPlace(it) },
-                    label = { Text("Ort *") },
-                    singleLine = true,
-                    trailingIcon = {
-                        if (uiState.place != null) {
-                            Icon(Icons.Default.Check, contentDescription = null)
+                Column{
+                    EinsatzmelderTextField(
+                        value = uiState.placeInput,
+                        onValueChange = { viewModel.setPlace(it) },
+                        label = { Text("Ort *") },
+                        singleLine = true,
+                        trailingIcon = {
+                            if (uiState.place != null) {
+                                Icon(Icons.Default.Check, contentDescription = null)
+                            }
                         }
-                    }
-                )
+                    )
+
+//                    OutlinedButton(modifier = Modifier.padding(top = 8.dp).fillMaxWidth(), onClick = {
+//
+//                    }){
+//                        Row() {
+//                            Icon(Icons.Default.Map, contentDescription = null, Modifier.padding(end = 8.dp))
+//                            Text("Karte anzeigen")
+//
+//                        }
+//                    }
+                }
             }
 
             item {

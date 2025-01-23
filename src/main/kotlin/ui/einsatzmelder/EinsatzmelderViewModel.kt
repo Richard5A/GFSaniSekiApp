@@ -79,10 +79,11 @@ class EinsatzmelderViewModel : ViewModel() {
             println("Dispatcher IO running")
             val result = alarmRepository.triggerAlarm(
                 TriggerAlarmData(
-                    keyword = if(isDebug) uiStateNow.keyword else "RD",
+                    keyword = if(isDebug) uiStateNow.keyword else "FR" + if(uiStateNow.notifyLeader) " + K" else "",
                     message = uiStateNow.description,
                     details = uiStateNow.details,
-                    `object` = uiStateNow.placeInput,
+                    `object` = (uiStateNow.place?.name ?: uiStateNow.placeInput) +
+                            if(uiStateNow.place?.description != null) " | " + uiStateNow.place.description else "",
                     type = uiStateNow.type,
                     lat = lat,
                     lng = lng,

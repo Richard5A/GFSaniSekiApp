@@ -80,7 +80,7 @@ Format:
 ```
 
 ### `debug.txt`
-Wenn in dieser Datei der Wert `true` steht, ist der Debug modus aktiviert. Dies ist auch in der UI sichtbar. Dadurch kann man auch ein Keyword angeben und somit auch Testalarme auslösen. Zukünftig werden auch weiter Funktionen folgen. 
+Wenn in dieser Datei der Wert `true` steht, ist der Debug-Modus aktiviert. Dadurch kann man auch ein Keyword angeben und somit auch Testalarme auslösen. Zukünftig werden auch weitere Funktionen folgen. 
 
 Format:
 ```

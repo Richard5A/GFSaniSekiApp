@@ -9,6 +9,21 @@ Dies ist einen einfache App zur Alamierung von Schulsanitätern über die FF-Age
 Es werden Zugangsdaten wie z.B. der Web-API-Token unverschlüsselt auf dem lokalen Gerät gespeichert.
 Zusätzlich werden auch Ortsnamen von vordefinierten Einsatzorten und deren Koordinaten unverschlüsselt im gleichen Ordner gespeichrt.
 
+## Installation
+Es können `.dmg`, `.msi` und `.deb`-Installer erstellt werden. 
+Für Windows ist eingestellt, dass eine Verknüpfung auf dem Desktop erzeugt und nur für den ausführenden Nutzer installiert werden soll. Dadurch sind bei der Installation keine Administratoren-Rechte notwendig.
+```kts
+nativeDistributions {
+    targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+    vendor = "Richard5A"
+    //...
+    windows.iconFile.set(layout.projectDirectory.file("src/main/resources/logo.ico"))
+    windows.perUserInstall = true
+    windows.shortcut = true
+}
+
+```
+
 ## Funktionen
 - Automatisches Mapping von Einsatzortnamen zu deren Koordianten. Siehe hierzu: [places.json](#placesjson)
 - Hinzualamieren von Leader auf Knopfdruck Siehe hierzu: [config.json](#configjson)

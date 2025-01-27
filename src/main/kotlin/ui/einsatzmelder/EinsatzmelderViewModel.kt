@@ -21,6 +21,7 @@ class EinsatzmelderViewModel : ViewModel() {
 
     private var _uiState: MutableStateFlow<EinsatzmelderUiState>
     private val isDebug: Boolean = IsDebugDataSource().isDebug()
+    private val isFreeVersion: Boolean = ConfigDataSource.getConfig()?.isFreeVersion ?: false
 
     init {
         // run that after init of isDebug
@@ -35,7 +36,8 @@ class EinsatzmelderViewModel : ViewModel() {
             requestResultError = false,
             isDebug = isDebug,
             notifyLeader = false,
-            leaderName = ConfigDataSource.getConfig()?.leaderName
+            leaderName = ConfigDataSource.getConfig()?.leaderName,
+            isFreeVersion = isFreeVersion
         ))
     }
 

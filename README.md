@@ -1,5 +1,5 @@
-# Gymnasium Freiham Sanitätsdienst Alarmierungsapp für das Sekreteriat.
-Dies ist einen einfache App zur Alamierung von Schulsanitätern über die FF-Agent API. Bisher funktiniert diese nur für die Free-Version von FF-Agent.
+# Gymnasium Freiham Sanitätsdienst Alarmierungsapp für das Sekretariat.
+Dies ist eine einfache App zur Alarmierung von Schulsanitätern über die FF-Agent-API. Bisher funktioniert diese nur für die Free-Version von FF-Agent.
 
 ![grafik](https://github.com/user-attachments/assets/83e33f81-42fc-4274-bb48-48d03484d5f4)
 ![grafik](https://github.com/user-attachments/assets/faafa8f8-4a1c-4cbc-8f12-cc453233e64e)
@@ -7,7 +7,7 @@ Dies ist einen einfache App zur Alamierung von Schulsanitätern über die FF-Age
 
 ## Datenschutz
 Es werden Zugangsdaten wie z.B. der Web-API-Token unverschlüsselt auf dem lokalen Gerät gespeichert.
-Zusätzlich werden auch Ortsnamen von vordefinierten Einsatzorten und deren Koordinaten unverschlüsselt im gleichen Ordner gespeichrt.
+Zusätzlich werden auch Ortsnamen von vordefinierten Einsatzorten und deren Koordinaten unverschlüsselt im gleichen Ordner gespeichert.
 
 ## Installation
 Es können `.dmg`, `.msi` und `.deb`-Installer erstellt werden. 
@@ -25,18 +25,24 @@ nativeDistributions {
 ```
 
 ## Funktionen
-- Automatisches Mapping von Einsatzortnamen zu deren Koordianten. Siehe hierzu: [places.json](#placesjson)
-- Hinzualamieren von Leader auf Knopfdruck Siehe hierzu: [config.json](#configjson)
+- Automatisches Mapping von Einsatzort-Namen zu deren Koordinaten. Siehe hierzu: [places.json](#placesjson)
+- Hinzu alarmieren von Leader auf Knopfdruck Siehe hierzu: [config.json](#configjson)
 - Schnelles Startup durch laufen im Hintergrund.
+- Switchen zwischen Live und Free mode.
+
+### `ffagent-keycert.p12`
+Diese Datei wird beim Abschließen eines Abos bei FF-Agent von FF-Agent bereitgestellt und muss in das Hauptverzeichnis gelegt werden. Dadurch wird die Verbindung zwischen FF-Agent Server und Client gesichert. Weiter infos siehe FF-Agent-Web-Api Dokumentation.
 
 ### `config.json`
-In dieseer Datei werden einfache Konfigurationen gespeichert. Zurzeit nur der Leadername. Wichtig, wenn man diese Funktion nutzen möchte, muss man in der FF-Agent Web UI eine extra Alarmbenachrichtigung für diese Person anlegen. Das Keyword wird als  `<AUSGEWÄTES KEYWORD> + K` übergeben.
-Auch dies muss man manuell konfigurieren. Siehe hierzu die FF-Agent Web UI Dokumentation.
+In dieser Datei werden einfache Konfigurationen gespeichert. Wichtig, wenn man diese Funktion nutzen möchte, muss man in der FF-Agent Web UI eine extra Alarmbenachrichtigung für diese Person anlegen. Das Keyword wird als  `<AUSGEWÄTES KEYWORD> + K` übergeben.
+Auch dies muss man manuell konfigurieren. Siehe hierzu die FF-Agent Web UI Dokumentation. Das Password für die p12 Datei muss manuell konfiguriert werden.
 
 Format:
 ```json
 {
-  "leaderName": "Max Mustermann"
+  "leaderName": "Max Mustermann",
+  "isFreeVersion": true,
+  "certificatePassword": "..."
 }
 ```
 
@@ -67,7 +73,7 @@ Format:
 ```
 
 ### `credentials.json`
-In dieser Datei werden die Zugangsdaten für die FF-Agent API hinterlegt. Wenn keine Datei gefunden wird, werden beim Start des Programms die Zugangsdaten abgeefragt. Die Tokens werden aus FF-Agent Web-UI raus kopiert. (Können nur Administratoren)
+In dieser Datei werden die Zugangsdaten für die FF-Agent-API hinterlegt. Wenn keine Datei gefunden wird, werden beim Start des Programms die Zugangsdaten abgefragt. Die Tokens werden aus FF-Agent Web-UI herauskopiert. (Können nur Administratoren)
 
 Format:
 ```json

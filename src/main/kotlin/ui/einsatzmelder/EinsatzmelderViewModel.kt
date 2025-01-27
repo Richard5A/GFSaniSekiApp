@@ -3,6 +3,7 @@ package ui.einsatzmelder
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.TriggerAlarmData
+import data.datasources.config.ConfigDataSource
 import data.repositories.TriggerAlarmRepository
 import data.datasources.debug.IsDebugDataSource
 import data.repositories.PlaceRepository
@@ -25,14 +26,16 @@ class EinsatzmelderViewModel : ViewModel() {
         // run that after init of isDebug
         _uiState = MutableStateFlow(EinsatzmelderUiState(
             description = "",
-            note = "",
+            details = "",
             placeInput = "",
             place = null,
             keyword = "",
             type = "",
             loading = false,
             requestResultError = false,
-            isDebug = isDebug
+            isDebug = isDebug,
+            notifyLeader = false,
+            leaderName = ConfigDataSource.getConfig()?.leaderName
         ))
     }
 
@@ -43,8 +46,8 @@ class EinsatzmelderViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(description = description)
     }
 
-    fun setNotes(note: String) {
-        _uiState.value = _uiState.value.copy(note = note)
+    fun setDetails(details: String) {
+        _uiState.value = _uiState.value.copy(details = details)
     }
 
     fun setPlace(place: String) {
@@ -61,6 +64,10 @@ class EinsatzmelderViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(type = type)
     }
 
+    fun setNotifyLeader(newValue: Boolean) {
+        _uiState.value = _uiState.value.copy(notifyLeader = newValue)
+    }
+
     fun triggerAlarm() {
         _uiState.value = _uiState.value.copy(loading = true)
         val uiStateNow = _uiState.value
@@ -72,10 +79,11 @@ class EinsatzmelderViewModel : ViewModel() {
             println("Dispatcher IO running")
             val result = alarmRepository.triggerAlarm(
                 TriggerAlarmData(
-                    keyword = if(isDebug) uiStateNow.keyword else "RD",
+                    keyword = if(isDebug) uiStateNow.keyword else "FR" + if(uiStateNow.notifyLeader) " + K" else "",
                     message = uiStateNow.description,
-                    note = uiStateNow.note,
-                    `object` = uiStateNow.placeInput,
+                    details = uiStateNow.details,
+                    `object` = (uiStateNow.place?.name ?: uiStateNow.placeInput) +
+                            if(uiStateNow.place?.description != null) " | " + uiStateNow.place.description else "",
                     type = uiStateNow.type,
                     lat = lat,
                     lng = lng,
@@ -90,7 +98,7 @@ class EinsatzmelderViewModel : ViewModel() {
                     TriggerAlarmData(
                         keyword = "TEST",
                         message = "TYP: ${uiStateNow.type}\nMESSAGE:${uiStateNow.description}",
-                        note = uiStateNow.note,
+                        details = uiStateNow.details,
                         `object` = uiStateNow.placeInput,
                         lat = lat,
                         lng = lng,
@@ -112,7 +120,7 @@ class EinsatzmelderViewModel : ViewModel() {
                     _uiState.value = _uiState.value.copy(
                         loading = false,
                         requestResultError = false,
-                        note = "",
+                        details = "",
                         placeInput = "",
                         place = null,
                         keyword = "",
@@ -125,7 +133,7 @@ class EinsatzmelderViewModel : ViewModel() {
                 _uiState.value = _uiState.value.copy(
                     loading = false,
                     requestResultError = false,
-                    note = "",
+                    details = "",
                     placeInput = "",
                     place = null,
                     keyword = "",

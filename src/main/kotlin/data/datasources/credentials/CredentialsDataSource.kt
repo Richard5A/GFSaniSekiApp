@@ -14,7 +14,7 @@ class CredentialsDataSource {
         val credentialsFlow: MutableStateFlow<FFAgentAPICredentials?> = MutableStateFlow(getCredentials())
 
         /**
-         * save of exceptions.
+         * should throw no exception.
          */
         fun getCredentials(): FFAgentAPICredentials? {
             val file = File(FILE_NAME)

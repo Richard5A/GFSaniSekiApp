@@ -1,6 +1,7 @@
 package data
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType
 import retrofit2.Call
@@ -9,8 +10,10 @@ import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.POST
 
+@OptIn(ExperimentalSerializationApi::class)
 val json = Json {
     ignoreUnknownKeys = true
+    allowTrailingComma = true
 }
 
 private val retrofit: Retrofit = Retrofit.Builder()

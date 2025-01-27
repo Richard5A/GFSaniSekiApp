@@ -2,8 +2,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 import data.datasources.credentials.CredentialsDataSource
 import it.sauronsoftware.junique.JUnique
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,12 +63,13 @@ fun main() {
         // Main Window
         val credentials by CredentialsDataSource.credentialsFlow.collectAsState()
         val isWindowOpen by windowOpenFlow.collectAsState()
+        val windowState = rememberWindowState(size = DpSize(450.dp, 700.dp))
         if (isWindowOpen) {
             Window(
                 onCloseRequest = { windowOpenFlow.value = false },
                 title = "Schulsanitätsdienst Einsatzmelder",
                 icon = painterResource(Res.drawable.logo),
-
+                state = windowState,
                 ) {
                 EinsatzmelderTheme {
                     Surface(color = MaterialTheme.colorScheme.surface) {

@@ -24,34 +24,36 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
     val uiState by viewModel.uiState.collectAsState()
 
     Box(Modifier.fillMaxSize()) {
-        LazyColumn (
-            modifier = Modifier.align(Alignment.Center).padding(horizontal = 16.dp),
+        LazyColumn(
+            modifier = Modifier.align(Alignment.Center).padding(horizontal = 16.dp).fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
 
             item {
                 Text(
-                    "Einsatz auslösen" + if(uiState.isDebug) " (Debug)" else "",
+                    "Einsatz auslösen" + if (uiState.isDebug) " (Debug)" else "",
                     fontSize = 24.sp,
                     modifier = Modifier.padding(top = 16.dp)
                 )
             }
 
             item {
-                if(uiState.requestResultError) {
-                    Card(colors = CardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer,
-                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        disabledContentColor = MaterialTheme.colorScheme.onSurface
-                    )) {
+                if (uiState.requestResultError) {
+                    Card(
+                        colors = CardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            disabledContentColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    ) {
 
                     }
                 }
             }
 
-            if(uiState.isDebug){
+            if (uiState.isDebug) {
                 item {
                     EinsatzmelderTextField(
                         value = uiState.keyword,
@@ -78,7 +80,7 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
                     label = { Text("Ort *") },
                     singleLine = true,
                     trailingIcon = {
-                        if(uiState.place != null) {
+                        if (uiState.place != null) {
                             Icon(Icons.Default.Check, contentDescription = null)
                         }
                     }
@@ -95,11 +97,17 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
 
             item {
                 EinsatzmelderTextField(
-                    value = uiState.note,
-                    onValueChange = { viewModel.setNotes(it) },
-                    label = { Text("Notizen (optional)") },
+                    value = uiState.details,
+                    onValueChange = { viewModel.setDetails(it) },
+                    label = { Text("Details (optional)") },
                 )
 
+            }
+            item {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Switch(checked = uiState.notifyLeader, onCheckedChange = viewModel::setNotifyLeader)
+                    Text((uiState.leaderName ?: "Leader") + " auch alarmieren", modifier = Modifier.padding(start = 8.dp))
+                }
             }
 
             item {
@@ -143,7 +151,7 @@ fun EinsatzmelderTextField(
         onValueChange = onValueChange,
         label = label,
         modifier = modifier.sizeIn(
-            minHeight = if(singleLine) 64.dp else 100.dp,
+            minHeight = if (singleLine) 64.dp else 100.dp,
             minWidth = 256.dp,
             maxWidth = 400.dp,
             maxHeight = 256.dp

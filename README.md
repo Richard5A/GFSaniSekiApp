@@ -63,7 +63,7 @@ Format:
     "lng": 11.000,
     "description": null
   }
-
+]
 ```
 
 ### `credentials.json`

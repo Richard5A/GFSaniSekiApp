@@ -6,6 +6,7 @@ import data.TriggerAlarmData
 import data.datasources.config.ConfigDataSource
 import data.repositories.TriggerAlarmRepository
 import data.datasources.debug.IsDebugDataSource
+import data.datasources.places.Place
 import data.repositories.PlaceRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +36,9 @@ class EinsatzmelderViewModel : ViewModel() {
             requestResultError = false,
             isDebug = isDebug,
             notifyLeader = false,
-            leaderName = ConfigDataSource.getConfig()?.leaderName
+            leaderName = ConfigDataSource.getConfig()?.leaderName,
+            latText = 0.0,
+            lngText = 0.0
         ))
     }
 
@@ -51,9 +54,18 @@ class EinsatzmelderViewModel : ViewModel() {
     }
 
     fun setPlace(place: String) {
-        val placeForString = placeRepository.findPlace(place)
+        val placeForString: Place? = if (_uiState.value.latText == 0.0) {
+            placeRepository.findPlace(place)
+        } else {
+            null
+        }
 //        println("Place $placeForString found for $place")
-        _uiState.value = _uiState.value.copy(placeInput = place, place = placeForString)
+        _uiState.value = _uiState.value.copy(placeInput = place, place = placeForString, latText = placeForString?.lat
+            ?: 0.0, lngText = placeForString?.lng ?: 0.0)
+    }
+
+    fun setLatLng(lat: Double, lng: Double) {
+        _uiState.value = _uiState.value.copy(latText = lat, lngText = lng, placeInput = "", place = null)
     }
 
     fun setKeyword(keyword: String) {
@@ -74,8 +86,8 @@ class EinsatzmelderViewModel : ViewModel() {
         println("triggerAlarm called")
 
         viewModelScope.launch(Dispatchers.IO) {
-            val lat = uiStateNow.place?.lat
-            val lng = uiStateNow.place?.lng
+            val lat = uiStateNow.place?.lat ?: uiStateNow.latText
+            val lng = uiStateNow.place?.lng ?: uiStateNow.lngText
             println("Dispatcher IO running")
             val result = alarmRepository.triggerAlarm(
                 TriggerAlarmData(

@@ -10,15 +10,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import com.multiplatform.webview.jsbridge.*
-import com.multiplatform.webview.web.*
+import com.multiplatform.webview.jsbridge.IJsMessageHandler
+import com.multiplatform.webview.jsbridge.JsMessage
+import com.multiplatform.webview.jsbridge.dataToJsonString
+import com.multiplatform.webview.jsbridge.rememberWebViewJsBridge
+import com.multiplatform.webview.web.WebView
+import com.multiplatform.webview.web.WebViewNavigator
+import com.multiplatform.webview.web.rememberWebViewStateWithHTMLData
 import data.datasources.credentials.CredentialsDataSource
+import data.datasources.places.PlaceDataSource
+import data.repositories.PlaceRepository
 import dev.datlag.kcef.KCEF
 import dev.datlag.kcef.KCEFBuilder
 import it.sauronsoftware.junique.JUnique
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import ui.einsatzmelder.EinsatzmelderScreen
 import ui.einsatzmelder.EinsatzmelderViewModel
@@ -80,14 +89,31 @@ fun main() {
         var initialized by remember { mutableStateOf(false) }
         val download: KCEFBuilder.Download = remember { KCEFBuilder.Download.Builder().github().build() }
         val jsBridge = rememberWebViewJsBridge()
+        val einsatzmelderViewModel = remember { EinsatzmelderViewModel() }
 
         val mapJsMessageHandler = object : IJsMessageHandler {
 
             override fun methodName(): String {
                 return "Map"
             }
-            override fun handle(message: JsMessage, navigator: WebViewNavigator?, callback: (String) -> Unit) {
 
+            override fun handle(message: JsMessage, navigator: WebViewNavigator?, callback: (String) -> Unit) {
+                println("Message Params: " + message.params)
+                val data = Json.decodeFromString<MessageFromMap>(message.params)
+                when (data.type) {
+                    "data" -> {
+                        if (data.name == "") {
+                            einsatzmelderViewModel.setLatLng(data.lat, data.lng)
+                        } else {
+                            einsatzmelderViewModel.setPlace(data.name)
+                        }
+                    }
+                    "onload" -> {
+                        val places = PlaceDataSource().getPlaces() ?: emptyList()
+                        callback(dataToJsonString(places))
+                    }
+                    else -> println("Unknown message")
+                }
             }
 
         }
@@ -143,7 +169,7 @@ fun main() {
                 EinsatzmelderTheme {
                     Surface(color = MaterialTheme.colorScheme.surface) {
                         if (credentials != null) {
-                            EinsatzmelderScreen(EinsatzmelderViewModel())
+                            EinsatzmelderScreen(einsatzmelderViewModel)
                         } else {
                             LoginScreen(LoginViewModel())
                         }
@@ -157,7 +183,7 @@ fun main() {
             var htmlData: String = ""
             Main::class.java.getResourceAsStream("assets/map.html")
                 .use { inputStream ->
-                    if(inputStream != null) {
+                    if (inputStream != null) {
                         BufferedReader(InputStreamReader(inputStream)).use { reader ->
                             htmlData = reader.readText()
                         }
@@ -195,4 +221,12 @@ fun main() {
 }
 
 class Main
+
+@Serializable
+data class MessageFromMap(
+    val type: String,
+    val name: String,
+    val lat: Double,
+    val lng: Double,
+)
 

@@ -74,7 +74,9 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
             }
 
             item {
-                Column{
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ){
                     EinsatzmelderTextField(
                         value = uiState.placeInput,
                         onValueChange = { viewModel.setPlace(it) },
@@ -84,18 +86,28 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
                             if (uiState.place != null) {
                                 Icon(Icons.Default.Check, contentDescription = null)
                             }
+                            if (uiState.latText != 0.0 && uiState.place == null) {
+                                Icon(Icons.Default.LocationOn, contentDescription = null)
+                            }
                         }
                     )
 
-//                    OutlinedButton(modifier = Modifier.padding(top = 8.dp).fillMaxWidth(), onClick = {
-//
-//                    }){
-//                        Row() {
-//                            Icon(Icons.Default.Map, contentDescription = null, Modifier.padding(end = 8.dp))
-//                            Text("Karte anzeigen")
-//
-//                        }
-//                    }
+                    Text(
+                        "Lat: " + uiState.latText,
+                    )
+
+                    Text(
+                        "Lng: " + uiState.lngText,
+                    )
+
+                    OutlinedButton(modifier = Modifier.padding(top = 8.dp).fillMaxWidth(), onClick = {
+
+                    }){
+                        Row {
+                            Icon(Icons.Default.Map, contentDescription = null, Modifier.padding(end = 8.dp))
+                            Text("Karte anzeigen")
+                        }
+                    }
                 }
             }
 
@@ -126,7 +138,7 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
                 Button(
                     onClick = { viewModel.triggerAlarm() },
                     modifier = Modifier.padding(bottom = 16.dp, top = 8.dp),
-                    enabled = (!uiState.isDebug || uiState.keyword.isNotBlank()) && uiState.placeInput.isNotBlank() && uiState.type.isNotBlank(),
+                    enabled = (!uiState.isDebug || uiState.keyword.isNotBlank()) && (uiState.placeInput.isNotBlank() || uiState.latText != 0.0) && uiState.type.isNotBlank(),
                 ) {
                     Text("Einsatz auslösen")
                 }

@@ -3,88 +3,116 @@
 <head>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <style>
-        #map { height: 100vh; width: 100vw; margin: 0 auto; }
-        body { overflow: hidden; margin: 0 auto; }
+        #map {
+            height: 100vh;
+            width: 100vw;
+            margin: 0 auto;
+        }
+
+        body {
+            overflow: hidden;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        const map = L.map('map').setView([48.14181774316394, 11.403982924929657], 17);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png?{foo}', {foo: 'bar', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    function waitForBridgeAndExecute(callback) {
+    if (window.kmpJsBridge && typeof window.kmpJsBridge.callNative === "function") {
+        callback();
+    } else {
+        console.log("Warte auf kmpJsBridge...");
+        setTimeout(() => waitForBridgeAndExecute(callback), 100);
+    }
+}
 
-        // show the scale bar on the lower left corner
-        L.control.scale({imperial: false, metric: true}).addTo(map);
+document.addEventListener("DOMContentLoaded", function () {
+    waitForBridgeAndExecute(getMarkersFromNative);
+});
 
-        let currentIncidentMarker = null;
-        let lastClickedMarker = null;  // To track the last clicked marker
-
-        // Pinpoints setzen
-        function addMarkers(objects) {
-            objects.forEach(i => {
-                const marker = L.circleMarker([i.lat, i.lng], { color: "blue", radius: 8, fillOpacity: 0.8 })
-                    .addTo(map)
-                    .bindPopup(`<b>${i.name}</b>`)
-                    .on('click', (e) => {
-                        if (lastClickedMarker) {
-                            lastClickedMarker.setStyle({ color: 'blue' });
-                        }
-                        if (currentIncidentMarker) {
-                            currentIncidentMarker.remove()
-                            currentIncidentMarker = null
-                        }
-                        e.target.setStyle({ color: 'red' });
-                        lastClickedMarker = e.target;
-
-                        const data = JSON.stringify({ name: i.name, lat: i.lat, lng: i.lng });
-                        if (window.external && typeof window.external.invoke === "function") {
-                            window.external.invoke(data);
-                        }
-                    })
-                    .on('popupopen', (e) => {
-                        if (lastClickedMarker) {
-                            lastClickedMarker.setStyle({ color: 'blue' });
-                        }
-
-                        e.target.setStyle({ color: 'red' });
-                        lastClickedMarker = e.target;
-                    });
+    function getMarkersFromNative() {
+        message = JSON.stringify({type: "onload", name: "", lat: 0.0, lng: 0.0})
+        if (window.kmpJsBridge && typeof window.kmpJsBridge.callNative === "function") {
+            window.kmpJsBridge.callNative("Map", message, function(data) {
+                addMarkers(JSON.parse(data))
             });
         }
+    }
 
-        // "Aktuellen Einsatz"-Marker setzen oder aktualisieren
-        function setCurrentIncidentMarker(lat, lng, name) {
-            if (lastClickedMarker) {
-                lastClickedMarker.setStyle({ color: 'blue' });
-            }
-            if (!currentIncidentMarker) {
-                currentIncidentMarker = L.marker([lat, lng])
-                    .addTo(map)
-                    .bindPopup(`<b>${name}</b>`);
-            } else {
-                currentIncidentMarker.setLatLng([lat, lng]);
-                currentIncidentMarker.setPopupContent(`<b>${name}</b>`);
-            }
+    const map = L.map('map').setView([48.14181774316394, 11.403982924929657], 17);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png?{foo}', {foo: 'bar', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+
+    // show the scale bar on the lower left corner
+    L.control.scale({imperial: false, metric: true}).addTo(map);
+
+    let currentIncidentMarker = null;
+    let lastClickedMarker = null;  // To track the last clicked marker
+
+    // Pinpoints setzen
+    function addMarkers(objects) {
+        objects.forEach(i => {
+            const marker = L.circleMarker([i.lat, i.lng], { color: "blue", radius: 8, fillOpacity: 0.8 })
+                .addTo(map)
+                .bindPopup(`<b>${i.name}</b>`)
+                .on('click', (e) => {
+                    if (lastClickedMarker) {
+                        lastClickedMarker.setStyle({ color: 'blue' });
+                    }
+                    if (currentIncidentMarker) {
+                        currentIncidentMarker.remove()
+                        currentIncidentMarker = null
+                    }
+                    e.target.setStyle({ color: 'red' });
+                    lastClickedMarker = e.target;
+
+                    const data = JSON.stringify({ type: "data", name: i.name, lat: i.lat, lng: i.lng });
+                    if (window.kmpJsBridge && typeof window.kmpJsBridge.callNative === "function") {
+                        window.kmpJsBridge.callNative("Map", data, null);
+                    }
+                })
+                .on('popupopen', (e) => {
+                    if (lastClickedMarker) {
+                        lastClickedMarker.setStyle({ color: 'blue' });
+                    }
+
+                    e.target.setStyle({ color: 'red' });
+                    lastClickedMarker = e.target;
+                });
+        });
+    }
+
+    // "Aktuellen Einsatz"-Marker setzen oder aktualisieren
+    function setCurrentIncidentMarker(lat, lng, name) {
+        if (lastClickedMarker) {
+            lastClickedMarker.setStyle({ color: 'blue' });
+        }
+        if (!currentIncidentMarker) {
+            currentIncidentMarker = L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup(`<b>${name}</b>`);
+        } else {
+            currentIncidentMarker.setLatLng([lat, lng]);
+            currentIncidentMarker.setPopupContent(`<b>${name}</b>`);
+        }
+    }
+
+    // Klick-Koordinaten erfassen und "ausgewählter Einsatzort"-Marker aktualisieren
+    map.on('click', (e) => {
+        if (currentIncidentMarker) {
+            currentIncidentMarker.remove();
+            currentIncidentMarker = null;
         }
 
-        // Klick-Koordinaten erfassen und "ausgewählter Einsatzort"-Marker aktualisieren
-        map.on('click', (e) => {
-            if (currentIncidentMarker) {
-                currentIncidentMarker.remove();
-                currentIncidentMarker = null;
-            }
-
-            const lat = e.latlng.lat;
-            const lng = e.latlng.lng;
-            const coordinates = JSON.stringify({ name: "", lat: lat, lng: lng });
-            setCurrentIncidentMarker(lat, lng, "ausgewählter Einsatzort");
-            if (window.external && typeof window.external.invoke === "function") {
-                window.external.invoke(coordinates);
-            }
-
-            console.log(`Clicked at: ${coordinates}`);
-        });
-    </script>
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        const coordinates = JSON.stringify({ type: "data", name: "", lat: lat, lng: lng });
+        setCurrentIncidentMarker(lat, lng, "ausgewählter Einsatzort");
+        if (window.kmpJsBridge && typeof window.kmpJsBridge.callNative === "function") {
+            window.kmpJsBridge.callNative("Map", coordinates, null);
+        }
+    });
+</script>
 </body>
 </html>

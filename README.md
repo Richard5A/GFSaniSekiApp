@@ -11,7 +11,7 @@ Zusätzlich werden auch Ortsnamen von vordefinierten Einsatzorten und deren Koor
 
 ## Installation
 Es können `.dmg`, `.msi` und `.deb`-Installer erstellt werden. 
-Für Windows ist eingestellt, dass eine Verknüpfung auf dem Desktop erzeugt und nur für den ausführenden Nutzer installiert werden soll. Dadurch sind bei der Installation keine Administratoren-Rechte notwendig.
+Für Windows ist eingestellt, dass eine Verknüpfung auf dem Desktop erzeugt und nur für den ausführenden Nutzer installiert werden soll. Dadurch sind bei der Installation keine Administratoren-Rechte notwendig. Standartmäßig wird die App in den AppData-Ordner instaliert. Der Instalationsort kann während der Instalation verändert werden.
 ```kts
 nativeDistributions {
     targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)

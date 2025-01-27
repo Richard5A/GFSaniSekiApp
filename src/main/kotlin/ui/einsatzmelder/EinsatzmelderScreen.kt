@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 @Composable
 fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
@@ -33,9 +32,19 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
             item {
                 Text(
                     "Einsatz auslösen" + if (uiState.isDebug) " (Debug)" else "",
-                    fontSize = 24.sp,
+                    style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(top = 16.dp)
                 )
+            }
+
+            if (uiState.isDebug) {
+                item {
+                    Text(
+                        if (uiState.isFreeVersion) "Free Version" else "Live Version",
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                }
             }
 
             item {
@@ -106,7 +115,10 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
             item {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Switch(checked = uiState.notifyLeader, onCheckedChange = viewModel::setNotifyLeader)
-                    Text((uiState.leaderName ?: "Leader") + " auch alarmieren", modifier = Modifier.padding(start = 8.dp))
+                    Text(
+                        (uiState.leaderName ?: "Leader") + " auch alarmieren",
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
                 }
             }
 
@@ -143,7 +155,7 @@ fun EinsatzmelderTextField(
     onValueChange: (String) -> Unit,
     label: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    trailingIcon: @Composable() (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
     singleLine: Boolean = false,
 ) {
     TextField(

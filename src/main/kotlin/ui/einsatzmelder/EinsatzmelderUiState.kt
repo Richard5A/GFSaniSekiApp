@@ -12,6 +12,7 @@ data class EinsatzmelderUiState(
     val loading: Boolean,
     val requestResultError: Boolean,
     val isDebug: Boolean,
+    val isFreeVersion: Boolean,
     val notifyLeader: Boolean,
     val leaderName: String?,
 )

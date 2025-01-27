@@ -8,7 +8,7 @@ class ConfigDataSource {
     companion object {
         private const val FILE_NAME = "config.json"
 
-        val configFlow = MutableStateFlow<ConfigDTO?>(getConfig())
+        private val configFlow = MutableStateFlow(getConfig())
 
         fun getConfig(): ConfigDTO? {
             val file = File(FILE_NAME)

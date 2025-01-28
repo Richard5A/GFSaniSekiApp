@@ -15,9 +15,11 @@ class LoginViewModel : ViewModel() {
     fun setWebApiToken(apiToken: String) {
         _uiState.value = _uiState.value.copy(webApiToken = apiToken)
     }
+
     fun setAccessToken(accessToken: String) {
         _uiState.value = _uiState.value.copy(accessToken = accessToken)
     }
+
     fun setWebApiKey(webApiKey: String) {
         _uiState.value = _uiState.value.copy(webApiKey = webApiKey)
     }

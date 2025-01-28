@@ -15,7 +15,7 @@ private lateinit var trayIcon: TrayIcon
 const val TRAY_ICON_TOOLTIP = "Einsatzmelder"
 
 fun getTrayIcon(): TrayIcon {
-    if(!::trayIcon.isInitialized) {
+    if (!::trayIcon.isInitialized) {
         val url: URL? = Main::class.java.getResource("logo.png")
         val image = Toolkit.getDefaultToolkit().getImage(url)
         val popup = PopupMenu()

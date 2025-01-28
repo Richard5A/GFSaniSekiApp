@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <link href="https://unpkg.com/leaflet/dist/leaflet.css" rel="stylesheet">
     <style>
         #map {
             height: 100vh;
@@ -20,73 +20,106 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
     function waitForBridgeAndExecute(callback) {
-    if (window.kmpJsBridge && typeof window.kmpJsBridge.callNative === "function") {
-        callback();
-    } else {
-        console.log("Warte auf kmpJsBridge...");
-        setTimeout(() => waitForBridgeAndExecute(callback), 100);
+        if (window.kmpJsBridge && typeof window.kmpJsBridge.callNative === "function") {
+            callback();
+        } else {
+            console.log("Warte auf kmpJsBridge...");
+            setTimeout(() => waitForBridgeAndExecute(callback), 100);
+        }
     }
-}
 
-document.addEventListener("DOMContentLoaded", function () {
-    waitForBridgeAndExecute(getMarkersFromNative);
-});
+    document.addEventListener("DOMContentLoaded", function () {
+        waitForBridgeAndExecute(getMarkersFromNative);
+    });
 
     function getMarkersFromNative() {
-        message = JSON.stringify({type: "onload", name: "", lat: 0.0, lng: 0.0})
+        const message = JSON.stringify({type: "onload", name: "", lat: 0.0, lng: 0.0});
         if (window.kmpJsBridge && typeof window.kmpJsBridge.callNative === "function") {
-            window.kmpJsBridge.callNative("Map", message, function(data) {
-                addMarkers(JSON.parse(data))
+            window.kmpJsBridge.callNative("Map", message, function (data) {
+                addMarkers(JSON.parse(data));
             });
         }
     }
 
-    const map = L.map('map').setView([48.14181774316394, 11.403982924929657], 17);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png?{foo}', {foo: 'bar', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+    const bounds = L.latLngBounds(
+        [48.061, 11.360],
+        [48.221, 11.620]
+    );
 
-    // show the scale bar on the lower left corner
+    const map = L.map('map', {
+        maxBounds: bounds,
+        maxBoundsViscosity: 1.0,
+        minZoom: 16,
+        zoomSnap: 0.5,
+        zoomDelta: 0.5
+    }).setView([48.14187474610397, 11.40346616384037], 17);
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png?{foo}', {
+        foo: 'bar',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    map.on('drag', function () {
+        map.panInsideBounds(bounds, {animate: false});
+    });
+
     L.control.scale({imperial: false, metric: true}).addTo(map);
 
     let currentIncidentMarker = null;
-    let lastClickedMarker = null;  // To track the last clicked marker
+    let lastClickedMarker = null;
+    const markers = [];
 
-    // Pinpoints setzen
     function addMarkers(objects) {
         objects.forEach(i => {
-            const marker = L.circleMarker([i.lat, i.lng], { color: "blue", radius: 8, fillOpacity: 0.8 })
+            const marker = L.circleMarker([i.lat, i.lng], {color: "blue", radius: 8, fillOpacity: 0.8})
                 .addTo(map)
                 .bindPopup(`<b>${i.name}</b>`)
                 .on('click', (e) => {
                     if (lastClickedMarker) {
-                        lastClickedMarker.setStyle({ color: 'blue' });
+                        lastClickedMarker.setStyle({color: 'blue'});
                     }
                     if (currentIncidentMarker) {
-                        currentIncidentMarker.remove()
-                        currentIncidentMarker = null
+                        currentIncidentMarker.remove();
+                        currentIncidentMarker = null;
                     }
-                    e.target.setStyle({ color: 'red' });
+                    e.target.setStyle({color: 'red'});
                     lastClickedMarker = e.target;
 
-                    const data = JSON.stringify({ type: "data", name: i.name, lat: i.lat, lng: i.lng });
+                    const data = JSON.stringify({type: "data", name: i.name, lat: i.lat, lng: i.lng});
                     if (window.kmpJsBridge && typeof window.kmpJsBridge.callNative === "function") {
                         window.kmpJsBridge.callNative("Map", data, null);
                     }
                 })
-                .on('popupopen', (e) => {
-                    if (lastClickedMarker) {
-                        lastClickedMarker.setStyle({ color: 'blue' });
-                    }
-
-                    e.target.setStyle({ color: 'red' });
-                    lastClickedMarker = e.target;
+                .on('mouseover', (e) => {
+                    e.target.openPopup();
+                })
+                .on('mouseout', (e) => {
+                    e.target.closePopup();
                 });
+
+            markers.push({name: i.name, marker: marker});
         });
     }
 
-    // "Aktuellen Einsatz"-Marker setzen oder aktualisieren
+    function highlightIncidentMarkerByName(name) {
+        console.log(name)
+        markers.forEach(item => {
+            if (item.name === name) {
+                lastClickedMarker = item.marker;
+                if (currentIncidentMarker) {
+                    currentIncidentMarker.remove();
+                    currentIncidentMarker = null;
+                }
+                item.marker.setStyle({color: 'red'});
+            } else {
+                item.marker.setStyle({color: 'blue'});
+            }
+        });
+    }
+
     function setCurrentIncidentMarker(lat, lng, name) {
         if (lastClickedMarker) {
-            lastClickedMarker.setStyle({ color: 'blue' });
+            lastClickedMarker.setStyle({color: 'blue'});
         }
         if (!currentIncidentMarker) {
             currentIncidentMarker = L.marker([lat, lng])
@@ -98,7 +131,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Klick-Koordinaten erfassen und "ausgewählter Einsatzort"-Marker aktualisieren
     map.on('click', (e) => {
         if (currentIncidentMarker) {
             currentIncidentMarker.remove();
@@ -107,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
-        const coordinates = JSON.stringify({ type: "data", name: "", lat: lat, lng: lng });
+        const coordinates = JSON.stringify({type: "data", name: "", lat: lat, lng: lng});
         setCurrentIncidentMarker(lat, lng, "ausgewählter Einsatzort");
         if (window.kmpJsBridge && typeof window.kmpJsBridge.callNative === "function") {
             window.kmpJsBridge.callNative("Map", coordinates, null);

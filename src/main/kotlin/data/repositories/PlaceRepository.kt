@@ -10,9 +10,9 @@ class PlaceRepository {
 
     init {
         dataSource.getPlaces()?.forEach { place: Place ->
-            if(place.isPrefix != true){
+            if (place.isPrefix != true) {
                 map[place.name] = place
-                for(alias in place.aliases ?: emptyList()) {
+                for (alias in place.aliases ?: emptyList()) {
                     map[alias] = place
                 }
 

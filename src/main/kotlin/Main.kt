@@ -1,52 +1,39 @@
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import com.multiplatform.webview.jsbridge.IJsMessageHandler
-import com.multiplatform.webview.jsbridge.JsMessage
-import com.multiplatform.webview.jsbridge.dataToJsonString
-import com.multiplatform.webview.jsbridge.rememberWebViewJsBridge
-import com.multiplatform.webview.web.WebView
-import com.multiplatform.webview.web.WebViewNavigator
-import com.multiplatform.webview.web.rememberWebViewStateWithHTMLData
+import com.multiplatform.webview.web.rememberWebViewNavigator
 import data.datasources.credentials.CredentialsDataSource
-import data.datasources.places.PlaceDataSource
-import data.repositories.PlaceRepository
-import dev.datlag.kcef.KCEF
-import dev.datlag.kcef.KCEFBuilder
 import it.sauronsoftware.junique.JUnique
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import ui.einsatzmelder.EinsatzmelderScreen
 import ui.einsatzmelder.EinsatzmelderViewModel
 import ui.login.LoginScreen
 import ui.login.LoginViewModel
+import ui.map.MapScreen
 import ui.resources.Res
 import ui.resources.logo
 import ui.theme.EinsatzmelderTheme
 import ui.windows.getTrayIcon
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
-import java.io.BufferedReader
-import java.io.File
-import java.io.InputStreamReader
-import kotlin.math.max
 import kotlin.system.exitProcess
 
 
 const val APP_ID = "GymFreihamSaniSekiApp"
+val mapWindowOpenFlow: MutableStateFlow<Boolean> = MutableStateFlow(true)
 
 fun main() {
     println("Starting application")
@@ -72,8 +59,7 @@ fun main() {
     // Action Listener only reacts on double click
     trayIcon.addMouseListener(object : MouseListener {
         override fun mouseClicked(e: MouseEvent?) {
-            if (trayIcon.popupMenu.isEnabled)
-                windowOpenFlow.value = true
+            if (trayIcon.popupMenu.isEnabled) windowOpenFlow.value = true
         }
 
         override fun mousePressed(e: MouseEvent?) {}
@@ -83,85 +69,15 @@ fun main() {
     })
 
     application {
-
-        var restartRequired by remember { mutableStateOf(false) }
-        var downloading by remember { mutableStateOf(0F) }
-        var initialized by remember { mutableStateOf(false) }
-        val download: KCEFBuilder.Download = remember { KCEFBuilder.Download.Builder().github().build() }
-        val jsBridge = rememberWebViewJsBridge()
-        val einsatzmelderViewModel = remember { EinsatzmelderViewModel() }
-
-        val mapJsMessageHandler = object : IJsMessageHandler {
-
-            override fun methodName(): String {
-                return "Map"
-            }
-
-            override fun handle(message: JsMessage, navigator: WebViewNavigator?, callback: (String) -> Unit) {
-                println("Message Params: " + message.params)
-                val data = Json.decodeFromString<MessageFromMap>(message.params)
-                when (data.type) {
-                    "data" -> {
-                        if (data.name == "") {
-                            einsatzmelderViewModel.setLatLng(data.lat, data.lng)
-                        } else {
-                            einsatzmelderViewModel.setPlace(data.name)
-                        }
-                    }
-                    "onload" -> {
-                        val places = PlaceDataSource().getPlaces() ?: emptyList()
-                        callback(dataToJsonString(places))
-                    }
-                    else -> println("Unknown message")
-                }
-            }
-
-        }
-
-        LaunchedEffect(jsBridge) {
-            jsBridge.register(handler = mapJsMessageHandler)
-
-        }
-
-        LaunchedEffect(Unit) {
-            withContext(Dispatchers.IO) {
-                KCEF.init(builder = {
-                    installDir(File("kcef-bundle"))
-
-                    progress {
-                        onDownloading {
-                            downloading = max(it, 0F)
-                        }
-                        onInitialized {
-                            initialized = true
-                        }
-                    }
-                    settings {
-                        cachePath = File("cache").absolutePath
-                    }
-                }, onError = {
-                    it?.printStackTrace()
-                }, onRestartRequired = {
-                    restartRequired = true
-                })
-            }
-        }
-
-
-
-        DisposableEffect(Unit) {
-            onDispose {
-                KCEF.disposeBlocking()
-            }
-        }
-
         // Main Window
+        val mapWebViewNavigator = rememberWebViewNavigator()
+        val einsatzmelderViewModel = remember { EinsatzmelderViewModel(mapWebViewNavigator) }
         val credentials by CredentialsDataSource.credentialsFlow.collectAsState()
         val isWindowOpen by windowOpenFlow.collectAsState()
         val windowState = rememberWindowState(size = DpSize(450.dp, 700.dp))
         if (isWindowOpen) {
             Window(
-                onCloseRequest = { windowOpenFlow.value = false },
+                onCloseRequest = { windowOpenFlow.value = false; mapWindowOpenFlow.value = false },
                 title = "Schulsanitätsdienst Einsatzmelder",
                 icon = painterResource(Res.drawable.logo),
                 state = windowState,
@@ -178,55 +94,24 @@ fun main() {
             }
         }
 
-        val mapWindowState = rememberWindowState()
-        Window(onCloseRequest = ::exitApplication, state = mapWindowState) {
-            var htmlData: String = ""
-            Main::class.java.getResourceAsStream("assets/map.html")
-                .use { inputStream ->
-                    if (inputStream != null) {
-                        BufferedReader(InputStreamReader(inputStream)).use { reader ->
-                            htmlData = reader.readText()
-                        }
-                    } else {
-                        println("inputStream is null")
-                    }
-                }
-//            val htmlData = Main::class.java.getResource("assets/map.html").readText()
-            val state = rememberWebViewStateWithHTMLData(htmlData)
-            Column {
-                // Text(state.loadingState.toString())
-                if (restartRequired) {
-                    Text(text = "Restart required.")
+        val mapWindowState = rememberWindowState(position = WindowPosition(500.dp, 10.dp))
+        val isMapWindowOpen by mapWindowOpenFlow.collectAsState()
+        Window(
+            onCloseRequest = { mapWindowOpenFlow.value = false },
+            visible = isMapWindowOpen,
+            state = mapWindowState,
+            icon = painterResource(Res.drawable.logo),
+            title = "Schulsanitätsdienst Einsatort Map",
+            onKeyEvent = { keyEvent ->
+                if (keyEvent.key == Key.Escape && keyEvent.type == KeyEventType.KeyDown) {
+                    mapWindowOpenFlow.value = false
+                    true
                 } else {
-                    if (initialized) {
-                        WebView(
-                            state = state,
-                            modifier = Modifier.fillMaxSize(),
-                            onCreated = {
-                                println("Created WebView")
-                            },
-                            onDispose = { s ->
-                                println("Disposed")
-                            },
-                            webViewJsBridge = jsBridge
-                        )
-                    } else {
-                        Text(text = "Downloading $downloading%")
-                    }
+                    false
                 }
-
-            }
-        }
+            }) { MapScreen(einsatzmelderViewModel, mapWebViewNavigator) }
     }
 }
 
 class Main
-
-@Serializable
-data class MessageFromMap(
-    val type: String,
-    val name: String,
-    val lat: Double,
-    val lng: Double,
-)
 

@@ -2,12 +2,13 @@ package ui.einsatzmelder
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.multiplatform.webview.web.WebViewNavigator
 import data.TriggerAlarmData
 import data.datasources.config.ConfigDataSource
-import data.repositories.TriggerAlarmRepository
 import data.datasources.debug.IsDebugDataSource
 import data.datasources.places.Place
 import data.repositories.PlaceRepository
+import data.repositories.TriggerAlarmRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,30 +17,33 @@ import kotlinx.coroutines.launch
 import ui.windows.notify
 import java.awt.TrayIcon
 
-class EinsatzmelderViewModel : ViewModel() {
+class EinsatzmelderViewModel(navigator: WebViewNavigator) : ViewModel() {
     private val alarmRepository = TriggerAlarmRepository()
     private val placeRepository = PlaceRepository()
-
     private var _uiState: MutableStateFlow<EinsatzmelderUiState>
     private val isDebug: Boolean = IsDebugDataSource().isDebug()
+    private val mapWebViewNavigator: WebViewNavigator = navigator
+    private var lastIncidentMarkerName: String = ""
 
     init {
         // run that after init of isDebug
-        _uiState = MutableStateFlow(EinsatzmelderUiState(
-            description = "",
-            details = "",
-            placeInput = "",
-            place = null,
-            keyword = "",
-            type = "",
-            loading = false,
-            requestResultError = false,
-            isDebug = isDebug,
-            notifyLeader = false,
-            leaderName = ConfigDataSource.getConfig()?.leaderName,
-            latText = 0.0,
-            lngText = 0.0
-        ))
+        _uiState = MutableStateFlow(
+            EinsatzmelderUiState(
+                description = "",
+                details = "",
+                placeInput = "",
+                place = null,
+                keyword = "",
+                type = "",
+                loading = false,
+                requestResultError = false,
+                isDebug = isDebug,
+                notifyLeader = false,
+                leaderName = ConfigDataSource.getConfig()?.leaderName,
+                latText = 0.0,
+                lngText = 0.0
+            )
+        )
     }
 
     val uiState: StateFlow<EinsatzmelderUiState>
@@ -54,18 +58,37 @@ class EinsatzmelderViewModel : ViewModel() {
     }
 
     fun setPlace(place: String) {
-        val placeForString: Place? = if (_uiState.value.latText == 0.0) {
-            placeRepository.findPlace(place)
-        } else {
-            null
+        val placeForString: Place? = placeRepository.findPlace(place)
+        val placeName = "highlightIncidentMarkerByName(${
+            "\"" + (placeForString?.name?.replace(
+                "\"",
+                "\\\""
+            ) ?: "") + "\""
+        })"
+        if (lastIncidentMarkerName != placeName) {
+            mapWebViewNavigator.evaluateJavaScript(
+                placeName, null
+            )
         }
+        lastIncidentMarkerName = placeName
+
 //        println("Place $placeForString found for $place")
-        _uiState.value = _uiState.value.copy(placeInput = place, place = placeForString, latText = placeForString?.lat
-            ?: 0.0, lngText = placeForString?.lng ?: 0.0)
+        _uiState.value = _uiState.value.copy(
+            placeInput = place,
+            place = placeForString,
+            latText = placeForString?.lat ?: _uiState.value.latText,
+            lngText = placeForString?.lng ?: _uiState.value.lngText
+        )
     }
 
-    fun setLatLng(lat: Double, lng: Double) {
-        _uiState.value = _uiState.value.copy(latText = lat, lngText = lng, placeInput = "", place = null)
+    fun setLatLng(lat: Double, lng: Double, name: String) {
+        val placeForString: Place? = placeRepository.findPlace(name)
+        _uiState.value = _uiState.value.copy(
+            latText = lat,
+            lngText = lng,
+            placeInput = if (name == "") if (_uiState.value.place == null) _uiState.value.placeInput else "" else name,
+            place = placeForString
+        )
     }
 
     fun setKeyword(keyword: String) {
@@ -91,11 +114,11 @@ class EinsatzmelderViewModel : ViewModel() {
             println("Dispatcher IO running")
             val result = alarmRepository.triggerAlarm(
                 TriggerAlarmData(
-                    keyword = if(isDebug) uiStateNow.keyword else "FR" + if(uiStateNow.notifyLeader) " + K" else "",
+                    keyword = if (isDebug) uiStateNow.keyword else "FR" + if (uiStateNow.notifyLeader) " + K" else "",
                     message = uiStateNow.description,
                     details = uiStateNow.details,
                     `object` = (uiStateNow.place?.name ?: uiStateNow.placeInput) +
-                            if(uiStateNow.place?.description != null) " | " + uiStateNow.place.description else "",
+                            if (uiStateNow.place?.description != null) " | " + uiStateNow.place.description else "",
                     type = uiStateNow.type,
                     lat = lat,
                     lng = lng,
@@ -103,7 +126,7 @@ class EinsatzmelderViewModel : ViewModel() {
             )
             println("Call resulted with status code: ${result.code()}")
 
-            if(result.code() != 200) {
+            if (result.code() != 200) {
                 println("Call unsuccessful, trying backup")
                 // The type will be overwritten by the System, so adding it to message.
                 val backupResult = alarmRepository.triggerAlarm(
@@ -118,7 +141,7 @@ class EinsatzmelderViewModel : ViewModel() {
                 )
                 println("Backup-call resulted with status code: ${backupResult.code()}")
 
-                if(backupResult.code() != 200) {
+                if (backupResult.code() != 200) {
                     println("Backup-call unsuccessful")
                     notify("Backup-Einsatz nicht gemeldet!", TrayIcon.MessageType.ERROR)
                     _uiState.value = _uiState.value.copy(
@@ -150,8 +173,12 @@ class EinsatzmelderViewModel : ViewModel() {
                     place = null,
                     keyword = "",
                     type = "",
-                    description = ""
+                    description = "",
+                    latText = 0.0,
+                    lngText = 0.0,
+                    notifyLeader = false,
                 )
+                mapWebViewNavigator.reload()
             }
         }
     }

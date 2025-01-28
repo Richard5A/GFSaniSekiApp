@@ -10,7 +10,7 @@ class PlaceDataSource {
 
     fun getPlaces(): List<Place>? {
         val file = File(PLACES_FILE_NAME)
-        if(file.exists()) {
+        if (file.exists()) {
             return try {
                 json.decodeFromString<List<Place>>(file.readText())
             } catch (e: Exception) {

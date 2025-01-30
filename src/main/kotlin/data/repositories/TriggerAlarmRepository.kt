@@ -25,11 +25,8 @@ class TriggerAlarmRepository {
         val credentials = CredentialsDataSource.getCredentials()!!
         return Api.retrofitService.triggerAlarm(
             hmac = calculateHMAC(
-                "${credentials.webApiToken}${credentials.selectiveCallCode}${credentials.accessToken}${
-                    json.encodeToString(
-                        data
-                    )
-                }", credentials.webApiKey
+                "${credentials.webApiToken}${credentials.selectiveCallCode}${credentials.accessToken}${json.encodeToString(data)}",
+                credentials.webApiKey
             ),
             webApiToken = credentials.webApiToken,
             accessToken = credentials.accessToken,

@@ -13,14 +13,14 @@ import com.multiplatform.webview.jsbridge.rememberWebViewJsBridge
 import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.WebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewStateWithHTMLData
-import data.MessageData
+import data.WebViewMessageData
 import data.datasources.places.PlaceDataSource
 import dev.datlag.kcef.KCEF
 import dev.datlag.kcef.KCEFBuilder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import mapWindowOpenFlow
 import ui.einsatzmelder.EinsatzmelderViewModel
 import java.io.BufferedReader
 import java.io.File
@@ -29,7 +29,11 @@ import kotlin.math.max
 
 
 @Composable
-fun MapScreen(viewModel: EinsatzmelderViewModel, mapWebViewNavigator: WebViewNavigator) {
+fun MapScreen(
+    viewModel: EinsatzmelderViewModel,
+    mapWebViewNavigator: WebViewNavigator,
+    mapWindowOpenFlow: MutableStateFlow<Boolean>
+) {
     var restartRequired by remember { mutableStateOf(false) }
     var downloading by remember { mutableStateOf(0F) }
     var initialized by remember { mutableStateOf(false) }
@@ -44,7 +48,7 @@ fun MapScreen(viewModel: EinsatzmelderViewModel, mapWebViewNavigator: WebViewNav
 
         override fun handle(message: JsMessage, navigator: WebViewNavigator?, callback: (String) -> Unit) {
             println("Message Params: " + message.params)
-            val data = Json.decodeFromString<MessageData>(message.params)
+            val data = Json.decodeFromString<WebViewMessageData>(message.params)
             when (data.type) {
                 "data" -> {
                     viewModel.setLatLng(data.lat, data.lng, data.name)

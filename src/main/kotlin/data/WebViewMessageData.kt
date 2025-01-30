@@ -3,7 +3,7 @@ package data
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class MessageData(
+data class WebViewMessageData(
     val type: String,
     val name: String,
     val lat: Double,

@@ -18,11 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import mapWindowOpenFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
-fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
+fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel, mapWindowOpenFlow: MutableStateFlow<Boolean>) {
 
     val uiState by viewModel.uiState.collectAsState()
     val isWindowOpen by mapWindowOpenFlow.collectAsState()
@@ -169,7 +168,9 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
 
         if (uiState.loading) {
             Box(
-                Modifier.fillMaxSize().background(Color(0x88FFFFFF))
+                Modifier
+                    .fillMaxSize()
+                    .background(Color(0x88FFFFFF))
                     .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {}) {
                 CircularProgressIndicator(
                     Modifier.align(Alignment.Center)
@@ -190,8 +191,16 @@ fun EinsatzmelderTextField(
     singleLine: Boolean = false,
 ) {
     TextField(
-        value = value, onValueChange = onValueChange, label = label, modifier = modifier.sizeIn(
-            minHeight = if (singleLine) 64.dp else 100.dp, minWidth = 256.dp, maxWidth = 400.dp, maxHeight = 256.dp
-        ).fillMaxWidth(), trailingIcon = trailingIcon, singleLine = singleLine
+        value = value,
+        onValueChange = onValueChange,
+        label = label,
+        modifier = modifier.sizeIn(
+            minHeight = if (singleLine) 64.dp else 100.dp,
+            minWidth = 256.dp,
+            maxWidth = 400.dp,
+            maxHeight = 256.dp
+        ).fillMaxWidth(),
+        trailingIcon = trailingIcon,
+        singleLine = singleLine
     )
 }

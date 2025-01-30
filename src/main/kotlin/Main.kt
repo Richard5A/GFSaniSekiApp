@@ -33,10 +33,10 @@ import kotlin.system.exitProcess
 
 
 const val APP_ID = "GymFreihamSaniSekiApp"
-val mapWindowOpenFlow: MutableStateFlow<Boolean> = MutableStateFlow(true)
 
 fun main() {
     println("Starting application")
+    val mapWindowOpenFlow: MutableStateFlow<Boolean> = MutableStateFlow(true)
     val windowOpenFlow: MutableStateFlow<Boolean> = MutableStateFlow(true)
 
     // Check if this is the only application running, otherwise stopping this
@@ -69,15 +69,22 @@ fun main() {
     })
 
     application {
-        // Main Window
+        //Map Window
         val mapWebViewNavigator = rememberWebViewNavigator()
+        val mapWindowState = rememberWindowState(position = WindowPosition(500.dp, 10.dp))
+        val isMapWindowOpen by mapWindowOpenFlow.collectAsState()
+
+        // Main Window
         val einsatzmelderViewModel = remember { EinsatzmelderViewModel(mapWebViewNavigator) }
         val credentials by CredentialsDataSource.credentialsFlow.collectAsState()
         val isWindowOpen by windowOpenFlow.collectAsState()
         val windowState = rememberWindowState(size = DpSize(450.dp, 700.dp))
         if (isWindowOpen) {
             Window(
-                onCloseRequest = { windowOpenFlow.value = false; mapWindowOpenFlow.value = false },
+                onCloseRequest = {
+                    windowOpenFlow.value = false
+                    mapWindowOpenFlow.value = false
+                },
                 title = "Schulsanitätsdienst Einsatzmelder",
                 icon = painterResource(Res.drawable.logo),
                 state = windowState,
@@ -85,7 +92,7 @@ fun main() {
                 EinsatzmelderTheme {
                     Surface(color = MaterialTheme.colorScheme.surface) {
                         if (credentials != null) {
-                            EinsatzmelderScreen(einsatzmelderViewModel)
+                            EinsatzmelderScreen(einsatzmelderViewModel, mapWindowOpenFlow)
                         } else {
                             LoginScreen(LoginViewModel())
                         }
@@ -94,11 +101,9 @@ fun main() {
             }
         }
 
-        val mapWindowState = rememberWindowState(position = WindowPosition(500.dp, 10.dp))
-        val isMapWindowOpen by mapWindowOpenFlow.collectAsState()
         Window(
             onCloseRequest = { mapWindowOpenFlow.value = false },
-            visible = isMapWindowOpen,
+            visible = isMapWindowOpen && credentials != null,
             state = mapWindowState,
             icon = painterResource(Res.drawable.logo),
             title = "Schulsanitätsdienst Einsatort Map",
@@ -109,7 +114,7 @@ fun main() {
                 } else {
                     false
                 }
-            }) { MapScreen(einsatzmelderViewModel, mapWebViewNavigator) }
+            }) { MapScreen(einsatzmelderViewModel, mapWebViewNavigator, mapWindowOpenFlow) }
     }
 }
 

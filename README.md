@@ -10,7 +10,7 @@ Es werden Zugangsdaten wie z.B. der Web-API-Token unverschlüsselt auf dem lokal
 Zusätzlich werden auch Ortsnamen von vordefinierten Einsatzorten und deren Koordinaten unverschlüsselt im gleichen Ordner gespeichert.
 
 ## Installation
-Es können `.dmg`, `.msi` und `.deb`-Installer erstellt werden.
+Es können `.dmg`, `.msi` und `.deb`-Installer erstellt werden. 
 Für Windows ist eingestellt, dass eine Verknüpfung auf dem Desktop erzeugt und nur für den ausführenden Nutzer installiert werden soll. Dadurch sind bei der Installation keine Administratoren-Rechte notwendig. Standardmäßig wird die App in den AppData-Ordner installer. Der Installation kann während der Installation verändert werden.
 ```kts
 nativeDistributions {
@@ -86,7 +86,7 @@ Format:
 ```
 
 ### `debug.txt`
-Wenn in dieser Datei der Wert `true` steht, ist der Debug-Modus aktiviert. Dadurch kann man auch ein Keyword angeben und somit auch Testalarme auslösen. Zukünftig werden auch weitere Funktionen folgen.
+Wenn in dieser Datei der Wert `true` steht, ist der Debug-Modus aktiviert. Dadurch kann man auch ein Keyword angeben und somit auch Testalarme auslösen. Zukünftig werden auch weitere Funktionen folgen. 
 
 Format:
 ```

@@ -20,30 +20,31 @@ import java.awt.TrayIcon
 class EinsatzmelderViewModel(navigator: WebViewNavigator) : ViewModel() {
     private val alarmRepository = TriggerAlarmRepository()
     private val placeRepository = PlaceRepository()
+
     private var _uiState: MutableStateFlow<EinsatzmelderUiState>
     private val isDebug: Boolean = IsDebugDataSource().isDebug()
     private val mapWebViewNavigator: WebViewNavigator = navigator
     private var lastIncidentMarkerName: String = ""
+    private val isFreeVersion: Boolean = ConfigDataSource.getConfig()?.isFreeVersion ?: false
 
     init {
         // run that after init of isDebug
-        _uiState = MutableStateFlow(
-            EinsatzmelderUiState(
-                description = "",
-                details = "",
-                placeInput = "",
-                place = null,
-                keyword = "",
-                type = "",
-                loading = false,
-                requestResultError = false,
-                isDebug = isDebug,
-                notifyLeader = false,
-                leaderName = ConfigDataSource.getConfig()?.leaderName,
-                latText = 0.0,
-                lngText = 0.0
-            )
-        )
+        _uiState = MutableStateFlow(EinsatzmelderUiState(
+            description = "",
+            details = "",
+            placeInput = "",
+            place = null,
+            keyword = "",
+            type = "",
+            loading = false,
+            requestResultError = false,
+            isDebug = isDebug,
+            notifyLeader = false,
+            leaderName = ConfigDataSource.getConfig()?.leaderName,
+            isFreeVersion = isFreeVersion,
+            latText = 0.0,
+            lngText = 0.0
+        ))
     }
 
     val uiState: StateFlow<EinsatzmelderUiState>

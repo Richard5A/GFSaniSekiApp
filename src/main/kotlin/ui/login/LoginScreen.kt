@@ -1,12 +1,8 @@
 package ui.login
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -24,6 +20,11 @@ fun LoginScreen(viewModel: LoginViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize()
     ) {
+        Text(
+            text = "Login",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
         TextField(
             value = uiState.webApiKey,
@@ -50,11 +51,28 @@ fun LoginScreen(viewModel: LoginViewModel) {
             }
         )
 
+        TextField(
+            value = uiState.leaderName,
+            label = { Text("Leader Name") },
+            onValueChange = { newValue ->
+                viewModel.setLeaderName(newValue)
+            }
+        )
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Switch(checked = uiState.isFreeVersion, onCheckedChange = viewModel::setIsFreeVersion)
+            Text(
+                "Free Version",
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
+
         Button(
             onClick = { viewModel.save() },
             enabled = uiState.webApiKey.isNotBlank() &&
                     uiState.webApiToken.isNotBlank() &&
-                    uiState.accessToken.isNotBlank(),
+                    uiState.accessToken.isNotBlank() &&
+                    uiState.leaderName.isNotBlank(),
         ) {
             Text("Login")
         }

@@ -1,5 +1,4 @@
 package ui.theme
-
 import androidx.compose.ui.graphics.Color
 
 val primaryLightMediumContrast = Color(0xFF6E3026)

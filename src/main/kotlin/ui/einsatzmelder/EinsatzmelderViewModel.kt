@@ -70,6 +70,20 @@ class EinsatzmelderViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(notifyLeader = newValue)
     }
 
+    fun clearAllFields() {
+        _uiState.value = _uiState.value.copy(
+            loading = false,
+            requestResultError = false,
+            details = "",
+            placeInput = "",
+            place = null,
+            keyword = "",
+            type = "",
+            description = "",
+            notifyLeader = false
+        )
+    }
+
     fun triggerAlarm() {
         _uiState.value = _uiState.value.copy(loading = true)
         val uiStateNow = _uiState.value

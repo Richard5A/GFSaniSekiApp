@@ -1,7 +1,6 @@
 package ui.einsatzmelder
 
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.TriggerAlarmData
@@ -39,7 +38,8 @@ class EinsatzmelderViewModel : ViewModel() {
             isDebug = isDebug,
             notifyLeader = false,
             leaderName = ConfigDataSource.getConfig()?.leaderName,
-            isFreeVersion = isFreeVersion
+            isFreeVersion = isFreeVersion,
+            openDialog = mutableStateOf(false)
         ))
     }
 
@@ -82,7 +82,8 @@ class EinsatzmelderViewModel : ViewModel() {
             keyword = "",
             type = "",
             description = "",
-            notifyLeader = false
+            notifyLeader = false,
+            openDialog = mutableStateOf(false)
         )
     }
 

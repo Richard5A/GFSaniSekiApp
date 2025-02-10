@@ -1,5 +1,6 @@
 package ui.einsatzmelder
 
+import androidx.compose.runtime.MutableState
 import data.datasources.places.Place
 
 data class EinsatzmelderUiState(
@@ -15,4 +16,5 @@ data class EinsatzmelderUiState(
     val isFreeVersion: Boolean,
     val notifyLeader: Boolean,
     val leaderName: String?,
+    val openDialog: MutableState<Boolean>,
 )

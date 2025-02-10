@@ -21,11 +21,9 @@ import androidx.compose.ui.window.Dialog
 fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
 
     val uiState by viewModel.uiState.collectAsState()
-
-    val openDialog = remember { mutableStateOf(false) }
-    if (openDialog.value) {
+    if (uiState.openDialog.value) {
         Dialog(
-            onDismissRequest = { openDialog.value = false },
+            onDismissRequest = { uiState.openDialog.value = false },
         ) {
             Box(
                 modifier = Modifier
@@ -49,7 +47,7 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
                 ) {
                     Button(
                         onClick = {
-                            openDialog.value = false
+                            uiState.openDialog.value = false
                         }
                     ) {
                         Text("Abbrechen")
@@ -57,7 +55,6 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
                     Button(
                         onClick = {
                             viewModel.clearAllFields()
-                            openDialog.value = false
                         }
                     ) {
                         Text("Leeren")
@@ -188,7 +185,7 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
                             disabledContainerColor = MaterialTheme.colorScheme.inverseOnSurface,
                             disabledContentColor = MaterialTheme.colorScheme.outlineVariant
                         ),
-                        onClick = { openDialog.value = true },
+                        onClick = { uiState.openDialog.value = true },
                         enabled = uiState.keyword.isNotBlank() || uiState.placeInput.isNotBlank() || uiState.type.isNotBlank() || uiState.notifyLeader || uiState.description.isNotBlank() || uiState.details.isNotBlank(),
                         modifier = Modifier.padding(start = 8.dp),
                         content = {

@@ -3,11 +3,19 @@ package data.datasources.places
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Place(
-    val name: String,
+open class Place(
+    open val name: String,
     val isPrefix: Boolean? = null,
     val aliases: List<String>? = null,
     val description: String?,
-    val lat: Double,
-    val lng: Double,
-)
+    open val lat: Double,
+    open val lng: Double,
+) {
+    data class MapPlace(
+        override val name: String,
+        override val lat: Double,
+        override val lng: Double,
+    ): Place(name, null, null, null, lat, lng)
+}
+
+

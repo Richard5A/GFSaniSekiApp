@@ -76,7 +76,7 @@ class EinsatzmelderViewModel(navigator: WebViewNavigator) : ViewModel() {
 //        println("Place $placeForString found for $place")
         _uiState.value = _uiState.value.copy(
             placeInput = place,
-            place = placeForString,
+            place = placeForString ?: _uiState.value.place,
             latText = placeForString?.lat ?: _uiState.value.latText,
             lngText = placeForString?.lng ?: _uiState.value.lngText
         )
@@ -88,7 +88,7 @@ class EinsatzmelderViewModel(navigator: WebViewNavigator) : ViewModel() {
             latText = lat,
             lngText = lng,
             placeInput = if (name == "") if (_uiState.value.place == null) _uiState.value.placeInput else "" else name,
-            place = placeForString
+            place = placeForString ?: Place.MapPlace(name, lat, lng)
         )
     }
 
@@ -110,8 +110,8 @@ class EinsatzmelderViewModel(navigator: WebViewNavigator) : ViewModel() {
         println("triggerAlarm called")
 
         viewModelScope.launch(Dispatchers.IO) {
-            val lat = uiStateNow.place?.lat ?: uiStateNow.latText
-            val lng = uiStateNow.place?.lng ?: uiStateNow.lngText
+            val lat = uiStateNow.place?.lat
+            val lng = uiStateNow.place?.lng
             println("Dispatcher IO running")
             val result = alarmRepository.triggerAlarm(
                 TriggerAlarmData(

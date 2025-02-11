@@ -1,5 +1,4 @@
 package ui.einsatzmelder
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.TriggerAlarmData
@@ -37,7 +36,8 @@ class EinsatzmelderViewModel : ViewModel() {
             isDebug = isDebug,
             notifyLeader = false,
             leaderName = ConfigDataSource.getConfig()?.leaderName,
-            isFreeVersion = isFreeVersion
+            isFreeVersion = isFreeVersion,
+            openDialog = false
         ))
     }
 
@@ -68,6 +68,25 @@ class EinsatzmelderViewModel : ViewModel() {
 
     fun setNotifyLeader(newValue: Boolean) {
         _uiState.value = _uiState.value.copy(notifyLeader = newValue)
+    }
+
+    fun setDialogState(state: Boolean) {
+        _uiState.value = _uiState.value.copy(openDialog = state)
+    }
+
+    fun clearAllFields() {
+        _uiState.value = _uiState.value.copy(
+            loading = false,
+            requestResultError = false,
+            details = "",
+            placeInput = "",
+            place = null,
+            keyword = "",
+            type = "",
+            description = "",
+            notifyLeader = false,
+            openDialog = false
+        )
     }
 
     fun triggerAlarm() {
@@ -119,29 +138,11 @@ class EinsatzmelderViewModel : ViewModel() {
                 } else {
                     println("Backup-call successful")
                     notify("Backup-Einsatz erfolgreich gemeldet!")
-                    _uiState.value = _uiState.value.copy(
-                        loading = false,
-                        requestResultError = false,
-                        details = "",
-                        placeInput = "",
-                        place = null,
-                        keyword = "",
-                        type = "",
-                        description = ""
-                    )
+                    clearAllFields()
                 }
             } else {
                 notify("Einsatz erfolgreich gemeldet!")
-                _uiState.value = _uiState.value.copy(
-                    loading = false,
-                    requestResultError = false,
-                    details = "",
-                    placeInput = "",
-                    place = null,
-                    keyword = "",
-                    type = "",
-                    description = ""
-                )
+                clearAllFields()
             }
         }
     }

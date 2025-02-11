@@ -1,5 +1,4 @@
 package ui.einsatzmelder
-
 import data.datasources.places.Place
 
 data class EinsatzmelderUiState(
@@ -15,4 +14,5 @@ data class EinsatzmelderUiState(
     val isFreeVersion: Boolean,
     val notifyLeader: Boolean,
     val leaderName: String?,
+    val openDialog: Boolean,
 )

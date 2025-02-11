@@ -1,26 +1,68 @@
 package ui.einsatzmelder
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 
 @Composable
 fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
 
     val uiState by viewModel.uiState.collectAsState()
+    if (uiState.openDialog) {
+        Dialog(
+            onDismissRequest = { viewModel.setDialogState(false) },
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(400.dp, 100.dp)
+                    .background(color = MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .border(
+                        width = 2.dp,
+                        color = MaterialTheme.colorScheme.surface
+                    )
+            ) {
+                Text(
+                    text = "Wirklich leeren?",
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(8.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(10.dp).align(Alignment.BottomCenter),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = {
+                            viewModel.setDialogState(false)
+                        }
+                    ) {
+                        Text("Abbrechen")
+                    }
+                    Button(
+                        onClick = {
+                            viewModel.clearAllFields()
+                        }
+                    ) {
+                        Text("Leeren")
+                    }
+                }
+            }
+        }
+    }
 
     Box(Modifier.fillMaxSize()) {
         LazyColumn(
@@ -31,12 +73,13 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
 
             item {
                 Text(
-                    "Einsatz auslösen" + if (uiState.isDebug) " (Debug)" else "",
+                    text = "Einsatz auslösen" + if (uiState.isDebug) " (Debug)" else "",
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(top = 16.dp)
+                    modifier = Modifier
+                        .align(Alignment.Center)
                 )
-            }
 
+            }
             if (uiState.isDebug) {
                 item {
                     Text(
@@ -123,12 +166,32 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
             }
 
             item {
-                Button(
-                    onClick = { viewModel.triggerAlarm() },
-                    modifier = Modifier.padding(bottom = 16.dp, top = 8.dp),
-                    enabled = (!uiState.isDebug || uiState.keyword.isNotBlank()) && uiState.placeInput.isNotBlank() && uiState.type.isNotBlank(),
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp, top = 8.dp)
                 ) {
-                    Text("Einsatz auslösen")
+                    Button(
+                        onClick = { viewModel.triggerAlarm() },
+                        enabled = (!uiState.isDebug || uiState.keyword.isNotBlank()) && uiState.placeInput.isNotBlank() && uiState.type.isNotBlank(),
+                    ) {
+                        Text("Einsatz auslösen")
+                    }
+
+                    FilledIconButton(
+                        colors = IconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                            disabledContainerColor = MaterialTheme.colorScheme.inverseOnSurface,
+                            disabledContentColor = MaterialTheme.colorScheme.outlineVariant
+                        ),
+                        onClick = { viewModel.setDialogState(true) },
+                        enabled = uiState.keyword.isNotBlank() || uiState.placeInput.isNotBlank() || uiState.type.isNotBlank() || uiState.notifyLeader || uiState.description.isNotBlank() || uiState.details.isNotBlank(),
+                        modifier = Modifier.padding(start = 8.dp),
+                        content = {
+                            Icon(Icons.Default.DeleteOutline, contentDescription = null)
+                        }
+                    )
                 }
             }
         }

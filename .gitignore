@@ -49,3 +49,5 @@ bin/
 /debug.txt
 /places.json
 /config.json
+/cache
+/kcef-bundle

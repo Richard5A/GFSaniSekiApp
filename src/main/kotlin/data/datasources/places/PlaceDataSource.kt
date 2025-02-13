@@ -8,11 +8,11 @@ class PlaceDataSource {
         const val PLACES_FILE_NAME = "places.json"
     }
 
-    fun getPlaces(): List<Place>? {
+    fun getPlaces(): List<Place.PredefinedPlace>? {
         val file = File(PLACES_FILE_NAME)
-        if(file.exists()) {
+        if (file.exists()) {
             return try {
-                json.decodeFromString<List<Place>>(file.readText())
+                json.decodeFromString<List<Place.PredefinedPlace>>(file.readText())
             } catch (e: Exception) {
                 e.printStackTrace()
                 null

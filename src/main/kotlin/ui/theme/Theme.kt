@@ -87,13 +87,13 @@ fun EinsatzmelderTheme(
     content: @Composable () -> Unit
 ) {
   val colorScheme = when {
-      darkTheme -> darkScheme
-      else -> lightScheme
+    darkTheme -> darkScheme
+    else -> lightScheme
   }
 
-  MaterialTheme(
-    colorScheme = colorScheme,
-    content = content
-  )
+    MaterialTheme(
+        colorScheme = colorScheme,
+        content = content
+    )
 }
 

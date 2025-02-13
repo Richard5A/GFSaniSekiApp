@@ -2,9 +2,11 @@ package ui.einsatzmelder
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.multiplatform.webview.web.WebViewNavigator
 import data.TriggerAlarmData
 import data.datasources.config.ConfigDataSource
 import data.datasources.debug.IsDebugDataSource
+import data.datasources.places.Place
 import data.repositories.PlaceRepository
 import data.repositories.TriggerAlarmRepository
 import kotlinx.coroutines.Dispatchers
@@ -15,30 +17,36 @@ import kotlinx.coroutines.launch
 import ui.windows.notify
 import java.awt.TrayIcon
 
-class EinsatzmelderViewModel : ViewModel() {
+class EinsatzmelderViewModel(navigator: WebViewNavigator) : ViewModel() {
     private val alarmRepository = TriggerAlarmRepository()
     private val placeRepository = PlaceRepository()
 
     private var _uiState: MutableStateFlow<EinsatzmelderUiState>
     private val isDebug: Boolean = IsDebugDataSource().isDebug()
+    private val mapWebViewNavigator: WebViewNavigator = navigator
+    private var lastIncidentMarkerName: String = ""
     private val isFreeVersion: Boolean = ConfigDataSource.getConfig()?.isFreeVersion ?: false
 
     init {
         // run that after init of isDebug
-        _uiState = MutableStateFlow(EinsatzmelderUiState(
-            description = "",
-            details = "",
-            placeInput = "",
-            place = null,
-            keyword = "",
-            type = "",
-            loading = false,
-            requestResultError = false,
-            isDebug = isDebug,
-            notifyLeader = false,
-            leaderName = ConfigDataSource.getConfig()?.leaderName,
-            isFreeVersion = isFreeVersion
-        ))
+        _uiState = MutableStateFlow(
+            EinsatzmelderUiState(
+                description = "",
+                details = "",
+                placeInput = "",
+                place = null,
+                keyword = "",
+                type = "",
+                loading = false,
+                requestResultError = false,
+                isDebug = isDebug,
+                notifyLeader = false,
+                leaderName = ConfigDataSource.getConfig()?.leaderName,
+                isFreeVersion = isFreeVersion,
+                latText = 0.0,
+                lngText = 0.0
+            )
+        )
     }
 
     val uiState: StateFlow<EinsatzmelderUiState>
@@ -53,9 +61,38 @@ class EinsatzmelderViewModel : ViewModel() {
     }
 
     fun setPlace(place: String) {
-        val placeForString = placeRepository.findPlace(place)
+        val placeForString: Place.PredefinedPlace? = placeRepository.findPlace(place)
+        val placeName = "highlightIncidentMarkerByName(${
+            "\"" + (placeForString?.name?.replace(
+                "\"",
+                "\\\""
+            ) ?: "") + "\""
+        })"
+        if (lastIncidentMarkerName != placeName) {
+            mapWebViewNavigator.evaluateJavaScript(
+                placeName, null
+            )
+        }
+        lastIncidentMarkerName = placeName
+
 //        println("Place $placeForString found for $place")
-        _uiState.value = _uiState.value.copy(placeInput = place, place = placeForString)
+        if (placeForString != null || _uiState.value.place is Place.PredefinedPlace) _uiState.value =
+            _uiState.value.copy(place = placeForString)
+        _uiState.value = _uiState.value.copy(
+            placeInput = place,
+            latText = placeForString?.lat ?: _uiState.value.latText,
+            lngText = placeForString?.lng ?: _uiState.value.lngText
+        )
+    }
+
+    fun setLatLng(lat: Double, lng: Double, name: String) {
+        val placeForString: Place.PredefinedPlace? = placeRepository.findPlace(name)
+        _uiState.value = _uiState.value.copy(
+            latText = lat,
+            lngText = lng,
+            place = placeForString ?: Place.MapPlace(name, lat, lng),
+            placeInput = if (name.isEmpty() && (_uiState.value.place is Place.MapPlace || _uiState.value.place !is Place)) _uiState.value.placeInput else name
+        )
     }
 
     fun setKeyword(keyword: String) {
@@ -79,13 +116,14 @@ class EinsatzmelderViewModel : ViewModel() {
             val lat = uiStateNow.place?.lat
             val lng = uiStateNow.place?.lng
             println("Dispatcher IO running")
+            println("Testing place name: ${uiStateNow.place?.name}")
             val result = alarmRepository.triggerAlarm(
                 TriggerAlarmData(
-                    keyword = if(isDebug) uiStateNow.keyword else "FR" + if(uiStateNow.notifyLeader) " + K" else "",
+                    keyword = if (isDebug) uiStateNow.keyword else "FR" + if (uiStateNow.notifyLeader) " + K" else "",
                     message = uiStateNow.description,
                     details = uiStateNow.details,
                     `object` = (uiStateNow.place?.name ?: uiStateNow.placeInput) +
-                            if(uiStateNow.place?.description != null) " | " + uiStateNow.place.description else "",
+                            if (uiStateNow.place is Place.PredefinedPlace && uiStateNow.place.description != null) " | " + uiStateNow.place.description else "",
                     type = uiStateNow.type,
                     lat = lat,
                     lng = lng,
@@ -93,7 +131,7 @@ class EinsatzmelderViewModel : ViewModel() {
             )
             println("Call resulted with status code: ${result.code()}")
 
-            if(result.code() != 200) {
+            if (result.code() != 200) {
                 println("Call unsuccessful, trying backup")
                 // The type will be overwritten by the System, so adding it to message.
                 val backupResult = alarmRepository.triggerAlarm(
@@ -108,7 +146,7 @@ class EinsatzmelderViewModel : ViewModel() {
                 )
                 println("Backup-call resulted with status code: ${backupResult.code()}")
 
-                if(backupResult.code() != 200) {
+                if (backupResult.code() != 200) {
                     println("Backup-call unsuccessful")
                     notify("Backup-Einsatz nicht gemeldet!", TrayIcon.MessageType.ERROR)
                     _uiState.value = _uiState.value.copy(
@@ -140,8 +178,12 @@ class EinsatzmelderViewModel : ViewModel() {
                     place = null,
                     keyword = "",
                     type = "",
-                    description = ""
+                    description = "",
+                    latText = 0.0,
+                    lngText = 0.0,
+                    notifyLeader = false,
                 )
+                mapWebViewNavigator.reload()
             }
         }
     }

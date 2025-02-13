@@ -6,6 +6,8 @@ data class EinsatzmelderUiState(
     val description: String,
     val details: String,
     val placeInput: String,
+    val latText: Double,
+    val lngText: Double,
     val place: Place?,
     val keyword: String,
     val type: String,

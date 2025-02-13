@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -16,11 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import data.datasources.places.Place
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
-fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
+fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel, mapWindowOpenFlow: MutableStateFlow<Boolean>) {
 
     val uiState by viewModel.uiState.collectAsState()
+    val isWindowOpen by mapWindowOpenFlow.collectAsState()
 
     Box(Modifier.fillMaxSize()) {
         LazyColumn(
@@ -83,17 +88,46 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
             }
 
             item {
-                EinsatzmelderTextField(
-                    value = uiState.placeInput,
-                    onValueChange = { viewModel.setPlace(it) },
-                    label = { Text("Ort *") },
-                    singleLine = true,
-                    trailingIcon = {
-                        if (uiState.place != null) {
-                            Icon(Icons.Default.Check, contentDescription = null)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    EinsatzmelderTextField(
+                        value = uiState.placeInput,
+                        onValueChange = { viewModel.setPlace(it) },
+                        label = { Text("Ort *") },
+                        singleLine = true,
+                        trailingIcon = {
+                            if (uiState.place is Place.PredefinedPlace) {
+                                Icon(Icons.Default.Check, contentDescription = null)
+                            }
+                            if (uiState.place is Place.MapPlace) {
+                                Icon(Icons.Default.LocationOn, contentDescription = null)
+                            }
+                        })
+
+                    Text(
+                        "Lat: " + uiState.latText,
+                    )
+
+                    Text(
+                        "Lng: " + uiState.lngText,
+                    )
+
+                    OutlinedButton(modifier = Modifier.padding(top = 8.dp).fillMaxWidth(), onClick = {
+                        mapWindowOpenFlow.value = !mapWindowOpenFlow.value
+                    }) {
+                        Row {
+                            Icon(Icons.Default.Map, contentDescription = null, Modifier.padding(end = 8.dp))
+                            Text(
+                                if (isWindowOpen) {
+                                    "Karte ausblenden"
+                                } else {
+                                    "Karte anzeigen"
+                                }
+                            )
                         }
                     }
-                )
+                }
             }
 
             item {
@@ -126,7 +160,7 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
                 Button(
                     onClick = { viewModel.triggerAlarm() },
                     modifier = Modifier.padding(bottom = 16.dp, top = 8.dp),
-                    enabled = (!uiState.isDebug || uiState.keyword.isNotBlank()) && uiState.placeInput.isNotBlank() && uiState.type.isNotBlank(),
+                    enabled = (!uiState.isDebug || uiState.keyword.isNotBlank()) && (uiState.placeInput.isNotBlank() || uiState.latText != 0.0) && uiState.type.isNotBlank(),
                 ) {
                     Text("Einsatz auslösen")
                 }
@@ -138,8 +172,7 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel) {
                 Modifier
                     .fillMaxSize()
                     .background(Color(0x88FFFFFF))
-                    .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {}
-            ) {
+                    .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {}) {
                 CircularProgressIndicator(
                     Modifier.align(Alignment.Center)
                 )

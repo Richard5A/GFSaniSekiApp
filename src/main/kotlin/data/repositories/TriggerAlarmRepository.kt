@@ -24,7 +24,10 @@ class TriggerAlarmRepository {
     suspend fun triggerAlarm(data: TriggerAlarmData): Response<Unit> {
         val credentials = CredentialsDataSource.getCredentials()!!
         return Api.retrofitService.triggerAlarm(
-            hmac = calculateHMAC("${credentials.webApiToken}${credentials.selectiveCallCode}${credentials.accessToken}${json.encodeToString(data)}", credentials.webApiKey),
+            hmac = calculateHMAC(
+                "${credentials.webApiToken}${credentials.selectiveCallCode}${credentials.accessToken}${json.encodeToString(data)}",
+                credentials.webApiKey
+            ),
             webApiToken = credentials.webApiToken,
             accessToken = credentials.accessToken,
             selectiveCallCode = credentials.selectiveCallCode,
@@ -48,7 +51,13 @@ class TriggerAlarmRepository {
             message = null,
         )
         return Api.retrofitService.triggerAlarm(
-            hmac = calculateHMAC("${credentials.webApiToken}${credentials.selectiveCallCode}${credentials.accessToken}${json.encodeToString(body)}", credentials.webApiKey),
+            hmac = calculateHMAC(
+                "${credentials.webApiToken}${credentials.selectiveCallCode}${credentials.accessToken}${
+                    json.encodeToString(
+                        body
+                    )
+                }", credentials.webApiKey
+            ),
             webApiToken = credentials.webApiToken,
             accessToken = credentials.accessToken,
             selectiveCallCode = credentials.selectiveCallCode,

@@ -29,22 +29,24 @@ class EinsatzmelderViewModel(navigator: WebViewNavigator) : ViewModel() {
 
     init {
         // run that after init of isDebug
-        _uiState = MutableStateFlow(EinsatzmelderUiState(
-            description = "",
-            details = "",
-            placeInput = "",
-            place = null,
-            keyword = "",
-            type = "",
-            loading = false,
-            requestResultError = false,
-            isDebug = isDebug,
-            notifyLeader = false,
-            leaderName = ConfigDataSource.getConfig()?.leaderName,
-            isFreeVersion = isFreeVersion,
-            latText = 0.0,
-            lngText = 0.0
-        ))
+        _uiState = MutableStateFlow(
+            EinsatzmelderUiState(
+                description = "",
+                details = "",
+                placeInput = "",
+                place = null,
+                keyword = "",
+                type = "",
+                loading = false,
+                requestResultError = false,
+                isDebug = isDebug,
+                notifyLeader = false,
+                leaderName = ConfigDataSource.getConfig()?.leaderName,
+                isFreeVersion = isFreeVersion,
+                latText = 0.0,
+                lngText = 0.0
+            )
+        )
     }
 
     val uiState: StateFlow<EinsatzmelderUiState>
@@ -59,7 +61,7 @@ class EinsatzmelderViewModel(navigator: WebViewNavigator) : ViewModel() {
     }
 
     fun setPlace(place: String) {
-        val placeForString: Place? = placeRepository.findPlace(place)
+        val placeForString: Place.PredefinedPlace? = placeRepository.findPlace(place)
         val placeName = "highlightIncidentMarkerByName(${
             "\"" + (placeForString?.name?.replace(
                 "\"",
@@ -74,21 +76,22 @@ class EinsatzmelderViewModel(navigator: WebViewNavigator) : ViewModel() {
         lastIncidentMarkerName = placeName
 
 //        println("Place $placeForString found for $place")
+        if (placeForString != null || _uiState.value.place is Place.PredefinedPlace) _uiState.value =
+            _uiState.value.copy(place = placeForString)
         _uiState.value = _uiState.value.copy(
             placeInput = place,
-            place = placeForString ?: _uiState.value.place,
             latText = placeForString?.lat ?: _uiState.value.latText,
             lngText = placeForString?.lng ?: _uiState.value.lngText
         )
     }
 
     fun setLatLng(lat: Double, lng: Double, name: String) {
-        val placeForString: Place? = placeRepository.findPlace(name)
+        val placeForString: Place.PredefinedPlace? = placeRepository.findPlace(name)
         _uiState.value = _uiState.value.copy(
             latText = lat,
             lngText = lng,
-            placeInput = if (name == "") if (_uiState.value.place == null) _uiState.value.placeInput else "" else name,
-            place = placeForString ?: Place.MapPlace(name, lat, lng)
+            place = placeForString ?: Place.MapPlace(name, lat, lng),
+            placeInput = if (name.isEmpty() && (_uiState.value.place is Place.MapPlace || _uiState.value.place !is Place)) _uiState.value.placeInput else name
         )
     }
 
@@ -113,13 +116,14 @@ class EinsatzmelderViewModel(navigator: WebViewNavigator) : ViewModel() {
             val lat = uiStateNow.place?.lat
             val lng = uiStateNow.place?.lng
             println("Dispatcher IO running")
+            println("Testing place name: ${uiStateNow.place?.name}")
             val result = alarmRepository.triggerAlarm(
                 TriggerAlarmData(
                     keyword = if (isDebug) uiStateNow.keyword else "FR" + if (uiStateNow.notifyLeader) " + K" else "",
                     message = uiStateNow.description,
                     details = uiStateNow.details,
                     `object` = (uiStateNow.place?.name ?: uiStateNow.placeInput) +
-                            if (uiStateNow.place?.description != null) " | " + uiStateNow.place.description else "",
+                            if (uiStateNow.place is Place.PredefinedPlace && uiStateNow.place.description != null) " | " + uiStateNow.place.description else "",
                     type = uiStateNow.type,
                     lat = lat,
                     lng = lng,

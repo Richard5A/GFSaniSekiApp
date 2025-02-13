@@ -97,10 +97,10 @@ fun EinsatzmelderScreen(viewModel: EinsatzmelderViewModel, mapWindowOpenFlow: Mu
                         label = { Text("Ort *") },
                         singleLine = true,
                         trailingIcon = {
-                            if (uiState.place != null && uiState.place!!::class == Place::class) {
+                            if (uiState.place is Place.PredefinedPlace) {
                                 Icon(Icons.Default.Check, contentDescription = null)
                             }
-                            if (uiState.place != null && uiState.place!!::class == Place.MapPlace::class) {
+                            if (uiState.place is Place.MapPlace) {
                                 Icon(Icons.Default.LocationOn, contentDescription = null)
                             }
                         })

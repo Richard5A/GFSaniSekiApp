@@ -123,6 +123,10 @@
         markers.forEach((marker, key) => {
             marker.setStyle({color: key === name ? 'red' : 'blue'});
         });
+        if (currentIncidentMarker) {
+            currentIncidentMarker.remove();
+            currentIncidentMarker = null;
+        }
 
         lastClickedMarker = markers.get(name) || null;
     }

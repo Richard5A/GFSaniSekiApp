@@ -26,7 +26,7 @@ nativeDistributions {
 
 ## Funktionen
 - Automatisches Mapping von Einsatzort-Namen zu deren Koordinaten. Siehe hierzu: [places.json](#placesjson)
-- Hinzu alarmieren von Leader auf Knopfdruck Siehe hierzu: [config.json](#configjson)
+- Hinzu alarmieren von Leader auf Knopfdruck. Siehe hierzu: [config.json](#configjson)
 - Schnelles Startup durch laufen im Hintergrund.
 - Switchen zwischen Live und Free mode.
 
